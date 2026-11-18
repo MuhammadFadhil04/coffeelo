@@ -35,11 +35,25 @@ export interface Product {
   description: string;
   basePrice: number;
   imageUrl: string;
+  images?: string[];
   stock: number;
   isAvailable: boolean;
   isFeatured: boolean;
   category?: Category;
   variants?: ProductVariant[];
+  tastingNotes?: string[];
+  roastLevel?: 'Light' | 'Medium' | 'Medium-Dark' | 'Dark';
+  temperature?: 'Hot' | 'Iced' | 'Both';
+  origin?: string;
+  altitude?: string;
+  process?: string;
+  scaScore?: number;
+  reviewsCount?: number;
+  rating?: number;
+  nutrition?: {
+    calories: number;
+    caffeine: string;
+  };
   createdAt: string;
 }
 
@@ -65,6 +79,7 @@ export interface CartItem {
   id: string; // unique item cart hash (productId + selected variant keys)
   product: Product;
   selectedVariants: Record<string, string>; // variantName -> optionValue
+  specialInstructions?: string;
   unitPrice: number;
   quantity: number;
   subtotal: number;

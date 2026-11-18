@@ -2,9 +2,12 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import CustomerLayout from '@/layouts/CustomerLayout';
 import HomePage from '@/pages/customer/HomePage';
+import MenuPage from '@/pages/customer/MenuPage';
+import ProductDetailPage from '@/pages/customer/ProductDetailPage';
+import CartPage from '@/pages/customer/CartPage';
 import { Coffee, ArrowLeft } from 'lucide-react';
 
-// Placeholder view for secondary routes ready for Phase 3/4/6
+// Placeholder view for secondary routes ready for Phase 4, 5, & 6
 const ComingSoonPage: React.FC<{ title: string; phase: string }> = ({ title, phase }) => (
   <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4 py-20 space-y-4">
     <div className="w-14 h-14 rounded-full bg-coffee-beige flex items-center justify-center text-coffee-orange">
@@ -36,9 +39,9 @@ export const App: React.FC = () => {
         {/* Customer Portal Routes */}
         <Route path="/" element={<CustomerLayout />}>
           <Route index element={<HomePage />} />
-          <Route path="menu" element={<ComingSoonPage title="Full Product Catalog" phase="Phase 3" />} />
-          <Route path="menu/:slug" element={<ComingSoonPage title="Product Detail & Customizer" phase="Phase 3" />} />
-          <Route path="cart" element={<ComingSoonPage title="Shopping Cart" phase="Phase 3" />} />
+          <Route path="menu" element={<MenuPage />} />
+          <Route path="menu/:slug" element={<ProductDetailPage />} />
+          <Route path="cart" element={<CartPage />} />
           <Route path="checkout" element={<ComingSoonPage title="Secure Checkout" phase="Phase 5" />} />
           <Route path="my-orders" element={<ComingSoonPage title="My Orders" phase="Phase 5" />} />
           <Route path="login" element={<ComingSoonPage title="Customer & Admin Login" phase="Phase 4" />} />

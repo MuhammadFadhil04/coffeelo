@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Coffee, ShoppingBag, User, Menu, X } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCartStore } from '@/stores/cartStore';
 
 export const Navbar: React.FC = () => {
@@ -8,6 +8,7 @@ export const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { getTotalCount, setIsCartOpen } = useCartStore();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,7 +22,7 @@ export const Navbar: React.FC = () => {
   const scrollToSection = (id: string) => {
     setIsMobileMenuOpen(false);
     if (location.pathname !== '/') {
-      window.location.href = `/#${id}`;
+      navigate(`/#${id}`);
       return;
     }
     const element = document.getElementById(id);
@@ -34,7 +35,7 @@ export const Navbar: React.FC = () => {
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled
-          ? 'bg-coffee-cream/85 backdrop-blur-md py-3 shadow-subtle border-b border-coffee-beige/60'
+          ? 'bg-coffee-cream/90 backdrop-blur-md py-3 shadow-subtle border-b border-coffee-beige/60'
           : 'bg-transparent py-5'
       }`}
     >
@@ -55,12 +56,16 @@ export const Navbar: React.FC = () => {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-coffee-dark">
-            <button
-              onClick={() => scrollToSection('collection')}
-              className="hover:text-coffee-orange transition relative py-1"
+            <Link
+              to="/menu"
+              className={`transition relative py-1 ${
+                location.pathname === '/menu'
+                  ? 'text-coffee-orange font-bold'
+                  : 'hover:text-coffee-orange'
+              }`}
             >
-              Collection
-            </button>
+              Full Menu
+            </Link>
             <button
               onClick={() => scrollToSection('story')}
               className="hover:text-coffee-orange transition relative py-1"
@@ -112,13 +117,13 @@ export const Navbar: React.FC = () => {
               <User className="w-5 h-5" />
             </Link>
 
-            {/* Order Now Pill Button */}
-            <button
-              onClick={() => scrollToSection('collection')}
+            {/* Order Now Pill Button (links to Menu) */}
+            <Link
+              to="/menu"
               className="hidden sm:inline-flex items-center px-5 py-2.5 rounded-full bg-coffee-dark hover:bg-coffee-dark/90 text-white font-semibold text-xs tracking-wide uppercase transition-all hover:shadow-card active:scale-95"
             >
               Order Now
-            </button>
+            </Link>
 
             {/* Mobile Hamburger Toggle */}
             <button
@@ -136,12 +141,13 @@ export const Navbar: React.FC = () => {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-coffee-cream border-b border-coffee-beige px-6 py-6 space-y-4 shadow-xl">
           <div className="flex flex-col space-y-3 font-semibold text-coffee-dark text-base">
-            <button
-              onClick={() => scrollToSection('collection')}
+            <Link
+              to="/menu"
+              onClick={() => setIsMobileMenuOpen(false)}
               className="text-left py-2 hover:text-coffee-orange transition border-b border-coffee-beige/40"
             >
-              Collection
-            </button>
+              Full Menu
+            </Link>
             <button
               onClick={() => scrollToSection('story')}
               className="text-left py-2 hover:text-coffee-orange transition border-b border-coffee-beige/40"
@@ -166,15 +172,26 @@ export const Navbar: React.FC = () => {
             >
               Visit Store
             </button>
+            <Link
+              to="/cart"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-left py-2 hover:text-coffee-orange transition border-b border-coffee-beige/40 flex items-center justify-between"
+            >
+              <span>Shopping Cart</span>
+              <span className="px-2 py-0.5 rounded-full bg-coffee-orange text-white text-xs font-bold">
+                {getTotalCount()}
+              </span>
+            </Link>
           </div>
 
           <div className="pt-2 flex flex-col gap-3">
-            <button
-              onClick={() => scrollToSection('collection')}
+            <Link
+              to="/menu"
+              onClick={() => setIsMobileMenuOpen(false)}
               className="w-full py-3 rounded-full bg-coffee-orange text-white font-bold text-center text-sm shadow-card"
             >
               Order Now
-            </button>
+            </Link>
             <Link
               to="/login"
               onClick={() => setIsMobileMenuOpen(false)}
