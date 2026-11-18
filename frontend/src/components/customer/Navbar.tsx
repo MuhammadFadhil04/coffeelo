@@ -1,14 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Coffee, ShoppingBag, User, Menu, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Coffee, ShoppingBag, User, Menu, X, LogOut, ShieldCheck, ShoppingCart } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCartStore } from '@/stores/cartStore';
+import { useAuthStore } from '@/stores/authStore';
 
 export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
   const { getTotalCount, setIsCartOpen } = useCartStore();
+  const { user, logout, fetchMe } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchMe();
+  }, [fetchMe]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -17,6 +26,17 @@ export const Navbar: React.FC = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const scrollToSection = (id: string) => {
@@ -29,6 +49,12 @@ export const Navbar: React.FC = () => {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    setIsUserMenuOpen(false);
+    navigate('/');
   };
 
   return (
@@ -108,16 +134,83 @@ export const Navbar: React.FC = () => {
               )}
             </button>
 
-            {/* Profile / Login */}
-            <Link
-              to="/login"
-              aria-label="Account Login"
-              className="p-2.5 rounded-full hover:bg-coffee-beige/40 text-coffee-dark transition hidden sm:flex items-center justify-center"
-            >
-              <User className="w-5 h-5" />
-            </Link>
+            {/* Profile / Account Dropdown */}
+            {user ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 p-1.5 rounded-full bg-coffee-beige/60 hover:bg-coffee-beige text-coffee-dark transition border border-coffee-beige"
+                >
+                  {user.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.name}
+                      className="w-7 h-7 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-coffee-dark text-white flex items-center justify-center text-xs font-bold">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="text-xs font-bold max-w-[80px] truncate hidden sm:inline-block pr-1">
+                    {user.name}
+                  </span>
+                </button>
 
-            {/* Order Now Pill Button (links to Menu) */}
+                {/* Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 rounded-3xl bg-white border border-coffee-beige shadow-card p-3 space-y-2 z-50 animate-scaleIn">
+                    <div className="p-2 border-b border-coffee-beige/60">
+                      <p className="font-extrabold text-sm text-coffee-dark truncate">{user.name}</p>
+                      <p className="text-[11px] text-coffee-brown truncate">{user.email}</p>
+                      <span className={`inline-block mt-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full ${user.role === 'ADMIN' ? 'bg-coffee-orange text-white' : 'bg-coffee-cream text-coffee-dark'}`}>
+                        {user.role}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1 text-xs font-semibold text-coffee-dark">
+                      <Link
+                        to="/cart"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 p-2 rounded-xl hover:bg-coffee-cream transition"
+                      >
+                        <ShoppingCart className="w-4 h-4 text-coffee-orange" />
+                        My Basket
+                      </Link>
+
+                      {user.role === 'ADMIN' && (
+                        <Link
+                          to="/admin/dashboard"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2 p-2 rounded-xl hover:bg-coffee-cream text-coffee-orange transition font-bold"
+                        >
+                          <ShieldCheck className="w-4 h-4" />
+                          Admin Dashboard
+                        </Link>
+                      )}
+
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-2 p-2 rounded-xl hover:bg-rose-50 text-rose-600 transition"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                aria-label="Account Login"
+                className="p-2.5 rounded-full hover:bg-coffee-beige/40 text-coffee-dark transition hidden sm:flex items-center justify-center"
+              >
+                <User className="w-5 h-5" />
+              </Link>
+            )}
+
+            {/* Order Now Pill Button */}
             <Link
               to="/menu"
               className="hidden sm:inline-flex items-center px-5 py-2.5 rounded-full bg-coffee-dark hover:bg-coffee-dark/90 text-white font-semibold text-xs tracking-wide uppercase transition-all hover:shadow-card active:scale-95"
@@ -172,16 +265,6 @@ export const Navbar: React.FC = () => {
             >
               Visit Store
             </button>
-            <Link
-              to="/cart"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-left py-2 hover:text-coffee-orange transition border-b border-coffee-beige/40 flex items-center justify-between"
-            >
-              <span>Shopping Cart</span>
-              <span className="px-2 py-0.5 rounded-full bg-coffee-orange text-white text-xs font-bold">
-                {getTotalCount()}
-              </span>
-            </Link>
           </div>
 
           <div className="pt-2 flex flex-col gap-3">
@@ -192,13 +275,22 @@ export const Navbar: React.FC = () => {
             >
               Order Now
             </Link>
-            <Link
-              to="/login"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full py-2.5 rounded-full border border-coffee-dark text-coffee-dark font-semibold text-center text-sm"
-            >
-              Sign In to Account
-            </Link>
+            {user ? (
+              <button
+                onClick={handleLogout}
+                className="w-full py-2.5 rounded-full border border-rose-400 text-rose-600 font-semibold text-center text-sm"
+              >
+                Sign Out ({user.name})
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full py-2.5 rounded-full border border-coffee-dark text-coffee-dark font-semibold text-center text-sm"
+              >
+                Sign In to Account
+              </Link>
+            )}
           </div>
         </div>
       )}
