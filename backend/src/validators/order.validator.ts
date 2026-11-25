@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
+export const paymentMethodEnum = z.enum(['QRIS', 'CASH']);
+
 export const orderItemInputSchema = z.object({
-  productId: z.string().uuid('Product ID must be a valid UUID'),
+  productId: z.string().trim().min(1, 'Product ID is required').max(150),
+  slug: z.string().trim().max(150).optional(),
   quantity: z.number().int().min(1, 'Quantity must be at least 1').max(50),
   selectedVariants: z.record(z.string().max(50)).optional(),
   specialInstructions: z.string().max(500).optional(),
@@ -22,6 +25,7 @@ export const createOrderSchema = z
     type: z.enum(['PICKUP', 'DELIVERY'], {
       required_error: 'Order type (PICKUP or DELIVERY) is required',
     }),
+    paymentMethod: paymentMethodEnum.default('QRIS'),
     storeLocation: z.string().trim().min(1).max(150).optional(),
     items: z.array(orderItemInputSchema).min(1, 'Order must contain at least 1 item').max(50),
     notes: z.string().max(1000).optional(),
@@ -57,6 +61,7 @@ export const orderStatusEnum = z.enum([
 export const updateOrderStatusSchema = z.object({
   status: orderStatusEnum,
   comment: z.string().trim().max(255).optional(),
+  markAsPaid: z.boolean().optional(),
 });
 
 export const myOrdersQuerySchema = z.object({

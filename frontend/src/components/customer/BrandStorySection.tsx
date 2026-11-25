@@ -17,23 +17,25 @@ export const BrandStorySection: React.FC = () => {
       gsap.from(orangeBlockRef.current, {
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: 'top 80%',
+          start: 'top 82%',
         },
-        x: 60,
+        x: 40,
         opacity: 0,
-        duration: 1.2,
+        duration: 0.9,
         ease: 'power3.out',
+        clearProps: 'transform,opacity',
       });
 
       gsap.from(imageBlockRef.current, {
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: 'top 80%',
+          start: 'top 82%',
         },
-        x: -60,
+        x: -40,
         opacity: 0,
-        duration: 1.2,
+        duration: 0.9,
         ease: 'power3.out',
+        clearProps: 'transform,opacity',
       });
     }, sectionRef);
 
@@ -49,11 +51,11 @@ export const BrandStorySection: React.FC = () => {
   };
 
   return (
-    <section id="story" ref={sectionRef} className="py-20 bg-coffee-cream overflow-hidden">
+    <section id="story" ref={sectionRef} className="py-14 lg:py-16 bg-coffee-cream overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
+        <div className="text-center max-w-2xl mx-auto mb-10 space-y-2.5">
           <span className="text-xs font-bold uppercase tracking-widest text-coffee-orange">
             Our Philosophy & Sourcing
           </span>
@@ -153,7 +155,7 @@ export const BrandStorySection: React.FC = () => {
         </div>
 
         {/* Three Pillar Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-8">
           <div className="p-6 rounded-3xl bg-white border border-coffee-beige shadow-subtle space-y-3">
             <div className="w-10 h-10 rounded-2xl bg-coffee-cream flex items-center justify-center text-coffee-orange">
               <Globe className="w-5 h-5" />

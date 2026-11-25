@@ -1,14 +1,33 @@
 import React from 'react';
-import { ArrowUp } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import {
+  ArrowUp,
+  ArrowRight,
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  Instagram,
+  Coffee,
+  ShieldCheck,
+} from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/stores/authStore';
 
 export const Footer: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+
   const scrollToTop = () => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
   };
 
-  const scrollToSection = (id: string) => {
+  const goToSection = (id: string) => {
+    if (location.pathname !== '/') {
+      navigate(`/#${id}`);
+      return;
+    }
     const el = document.getElementById(id);
     if (el) {
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -17,105 +36,252 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-coffee-dark text-coffee-cream pt-16 pb-12 border-t border-coffee-dark/80 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Main Footer Row matching Image 5 bottom */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start pb-12 border-b border-white/10">
-          
-          {/* Brand Logo & Art Mark */}
-          <div className="md:col-span-4 space-y-4">
-            <div className="flex items-center gap-3">
-              {/* Abstract Coffee Bean Trio Logo Mark matching Image 5 */}
-              <div className="flex flex-col items-center">
-                <svg className="w-10 h-10 text-coffee-cream" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <ellipse cx="14" cy="14" rx="8" ry="11" transform="rotate(-15 14 14)" />
-                  <path d="M12 5C14 10 16 14 13 23" />
-                  <ellipse cx="27" cy="18" rx="8" ry="12" transform="rotate(20 27 18)" />
-                  <path d="M25 8C29 13 28 20 26 29" />
-                  <ellipse cx="18" cy="28" rx="9" ry="7" transform="rotate(-5 18 28)" />
-                  <path d="M11 27C17 26 22 28 25 30" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-extrabold text-2xl tracking-tight text-white">Coffeelo</h3>
-                <p className="text-[10px] tracking-widest uppercase text-coffee-beige/80">Artisan Coffee House</p>
-              </div>
-            </div>
-
-            <p className="text-xs text-coffee-cream/70 max-w-sm leading-relaxed">
-              Sebuah ruang bagi penikmat kopi spesialti. Kami memanggang biji kopi dengan penuh cinta, dedikasi, dan transparansi proses dari hulu ke hilir.
+    <footer className="bg-[#2B1008] text-coffee-cream pt-12 pb-8 border-t border-white/10 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        {/* Top Roastery CTA Card */}
+        <div className="rounded-3xl bg-gradient-to-r from-[#451B0E] via-[#562111] to-[#3A1409] border border-white/10 p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-elevation">
+          <div className="space-y-1.5 max-w-xl">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-widest text-coffee-orange">
+              <Coffee className="w-3.5 h-3.5" />
+              Artisan Coffee Roastery & Espresso Bar
+            </span>
+            <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Siap Menikmati Seduhan Segar Hari Ini?
+            </h3>
+            <p className="text-xs sm:text-sm text-coffee-beige/80 leading-relaxed">
+              Pesan online untuk Express Pickup tanpa antre atau pengiriman kurir langsung dari bar kami.
             </p>
           </div>
 
-          {/* Navigation Links Column matching Image 5 */}
-          <div className="md:col-span-5 grid grid-cols-2 gap-4 text-xs font-bold uppercase tracking-widest text-coffee-cream/90">
-            <div className="space-y-3">
-              <div>
-                <button onClick={() => scrollToSection('story')} className="hover:text-coffee-orange transition">
-                  About Us
-                </button>
-              </div>
-              <div>
-                <button onClick={() => scrollToSection('collection')} className="hover:text-coffee-orange transition">
-                  Menu
-                </button>
-              </div>
-              <div>
-                <button onClick={() => scrollToSection('showcase')} className="hover:text-coffee-orange transition">
-                  Signature
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <button onClick={() => scrollToSection('testimonials')} className="hover:text-coffee-orange transition">
-                  Guests
-                </button>
-              </div>
-              <div>
-                <button onClick={() => scrollToSection('location')} className="hover:text-coffee-orange transition">
-                  Locations
-                </button>
-              </div>
-              <div>
-                <Link to="/admin/dashboard" className="text-coffee-orange hover:text-white transition">
-                  Admin Portal →
-                </Link>
-              </div>
-            </div>
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <Link
+              to="/menu"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-coffee-orange hover:bg-white hover:text-coffee-dark text-white font-extrabold text-xs uppercase tracking-wider transition-colors shadow-card"
+            >
+              Jelajahi Menu
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            {user ? (
+              <Link
+                to="/my-orders"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/15 font-extrabold text-xs uppercase tracking-wider transition-colors"
+              >
+                Riwayat Pesanan
+              </Link>
+            ) : (
+              <Link
+                to="/register"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/15 font-extrabold text-xs uppercase tracking-wider transition-colors"
+              >
+                Buat Akun Member
+              </Link>
+            )}
           </div>
-
-          {/* Right Column: Legal & Copyright matching Image 5 */}
-          <div className="md:col-span-3 space-y-3 text-xs text-coffee-cream/70 md:text-right">
-            <p className="font-semibold text-white">Coffeelo House 2026 ©</p>
-            <p>
-              <a href="#privacy" className="hover:text-white transition">Privacy policy</a>
-            </p>
-            <p>
-              <a href="#terms" className="hover:text-white transition">Terms and conditions</a>
-            </p>
-            <p className="text-[11px] text-coffee-beige/60 pt-2">
-              All images and recipes curated for specialty coffee lovers.
-            </p>
-          </div>
-
         </div>
 
-        {/* Back to top row */}
-        <div className="pt-6 flex items-center justify-between text-xs text-coffee-cream/60">
-          <p>© 2026 Coffeelo. All rights reserved.</p>
+        {/* Main 4-Column Footer Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 pb-10 border-b border-white/10">
+          {/* Column 1: Brand Identity */}
+          <div className="lg:col-span-4 space-y-4">
+            <Link to="/" className="inline-flex items-center gap-3 group">
+              <div className="w-11 h-11 rounded-2xl bg-coffee-orange text-white flex items-center justify-center shadow-md">
+                <Coffee className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="block font-extrabold text-2xl tracking-tight text-white leading-none">
+                  Coffeelo
+                </span>
+                <span className="block text-[10px] tracking-widest uppercase font-bold text-coffee-beige/75 mt-1">
+                  Café & Specialty Roastery
+                </span>
+              </div>
+            </Link>
+
+            <p className="text-xs sm:text-sm text-coffee-cream/75 leading-relaxed max-w-sm">
+              Ruang bagi penikmat kopi spesialti. Kami menyangrai biji kopi pilihan secara berkala dengan transparansi asal-usul dari petani lokal hingga ke cangkir Anda.
+            </p>
+
+            <div className="flex items-center gap-2.5 pt-1">
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Instagram Coffeelo"
+                className="w-10 h-10 rounded-full bg-white/[0.07] hover:bg-coffee-orange border border-white/10 flex items-center justify-center text-coffee-cream hover:text-white transition-colors"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+              <a
+                href="mailto:sayhi@coffeelo.com"
+                aria-label="Email Coffeelo"
+                className="w-10 h-10 rounded-full bg-white/[0.07] hover:bg-coffee-orange border border-white/10 flex items-center justify-center text-coffee-cream hover:text-white transition-colors"
+              >
+                <Mail className="w-4 h-4" />
+              </a>
+              <a
+                href="tel:+6281234567890"
+                aria-label="Telepon Coffeelo"
+                className="w-10 h-10 rounded-full bg-white/[0.07] hover:bg-coffee-orange border border-white/10 flex items-center justify-center text-coffee-cream hover:text-white transition-colors"
+              >
+                <Phone className="w-4 h-4" />
+              </a>
+              <a
+                href="https://maps.google.com"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Lokasi Coffeelo di Google Maps"
+                className="w-10 h-10 rounded-full bg-white/[0.07] hover:bg-coffee-orange border border-white/10 flex items-center justify-center text-coffee-cream hover:text-white transition-colors"
+              >
+                <MapPin className="w-4 h-4" />
+              </a>
+            </div>
+          </div>
+
+          {/* Column 2: Navigation */}
+          <div className="lg:col-span-2 space-y-3.5">
+            <h4 className="text-xs font-extrabold uppercase tracking-widest text-white">
+              Eksplorasi
+            </h4>
+            <ul className="space-y-2.5 text-xs font-semibold text-coffee-cream/75">
+              <li>
+                <Link to="/menu" className="hover:text-coffee-orange transition-colors">
+                  Full Menu
+                </Link>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => goToSection('story')}
+                  className="hover:text-coffee-orange transition-colors cursor-pointer"
+                >
+                  Philosophy
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => goToSection('showcase')}
+                  className="hover:text-coffee-orange transition-colors cursor-pointer"
+                >
+                  Signature Recipes
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => goToSection('testimonials')}
+                  className="hover:text-coffee-orange transition-colors cursor-pointer"
+                >
+                  Guest Stories
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => goToSection('location')}
+                  className="hover:text-coffee-orange transition-colors cursor-pointer"
+                >
+                  Store Location
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 3: Customer Account */}
+          <div className="lg:col-span-3 space-y-3.5">
+            <h4 className="text-xs font-extrabold uppercase tracking-widest text-white">
+              Layanan Pelanggan
+            </h4>
+            <ul className="space-y-2.5 text-xs font-semibold text-coffee-cream/75">
+              {user ? (
+                <>
+                  <li>
+                    <Link to="/profile" className="hover:text-coffee-orange transition-colors">
+                      Profil Akun ({user.name})
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/my-orders" className="hover:text-coffee-orange transition-colors">
+                      Lacak & Riwayat Pesanan
+                    </Link>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <Link to="/login" className="hover:text-coffee-orange transition-colors">
+                      Masuk Akun Pelanggan
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/register" className="hover:text-coffee-orange transition-colors">
+                      Daftar Akun Baru
+                    </Link>
+                  </li>
+                </>
+              )}
+              <li>
+                <Link to="/cart" className="hover:text-coffee-orange transition-colors">
+                  Keranjang Belanja
+                </Link>
+              </li>
+              <li className="pt-1">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[11px] text-coffee-beige">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Pembayaran Aman via Midtrans</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4: Flagship House & Hours */}
+          <div className="lg:col-span-3 space-y-3.5">
+            <h4 className="text-xs font-extrabold uppercase tracking-widest text-white">
+              Flagship Roastery
+            </h4>
+            <div className="space-y-2.5 text-xs text-coffee-cream/75">
+              <div className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-coffee-orange shrink-0 mt-0.5" />
+                <p className="leading-relaxed">
+                  Jl. Senopati No. 88, Kebayoran Baru, Jakarta Selatan 12190
+                </p>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Clock className="w-4 h-4 text-coffee-orange shrink-0" />
+                <p className="font-semibold text-white">Setiap Hari: 08:00 – 21:00 WIB</p>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Phone className="w-4 h-4 text-coffee-orange shrink-0" />
+                <p>+62 812-3456-7890</p>
+              </div>
+            </div>
+
+            <div className="pt-1 flex flex-wrap gap-1.5">
+              {['QRIS', 'Virtual Account', 'GoPay / ShopeePay', 'Card'].map((method) => (
+                <span
+                  key={method}
+                  className="px-2.5 py-1 rounded-lg bg-white/[0.06] border border-white/10 text-[10px] font-bold text-coffee-beige/90"
+                >
+                  {method}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Copyright & Back to Top */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-coffee-cream/60">
+          <p>© {new Date().getFullYear()} Coffeelo Specialty Coffee House. All rights reserved.</p>
 
           <button
+            type="button"
             onClick={scrollToTop}
-            className="flex items-center gap-1.5 hover:text-white transition font-medium"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-coffee-cream hover:text-white transition-colors font-semibold cursor-pointer"
           >
             <span>Back to top</span>
             <ArrowUp className="w-3.5 h-3.5" />
           </button>
         </div>
-
       </div>
     </footer>
   );

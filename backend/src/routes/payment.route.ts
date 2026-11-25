@@ -16,6 +16,14 @@ router.post('/create', authenticate, validate(createPaymentSchema), paymentContr
 // Midtrans Webhook Notification Handler (Public, Zod-validated + SHA-512 signature verified)
 router.post('/webhook', validate(midtransWebhookSchema), paymentController.handleWebhook);
 
+// Confirm QRIS scan payment for an order (Authenticated, ownership isolated)
+router.post(
+  '/:orderId/confirm-qris',
+  authenticate,
+  validateParams(paymentOrderParamSchema),
+  paymentController.confirmQris
+);
+
 // Payment Status Check (Authenticated, ownership isolated)
 router.get(
   '/:orderId',

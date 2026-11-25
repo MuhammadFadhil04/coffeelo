@@ -6,7 +6,7 @@ import {
   CreditCard, ArrowRight, type LucideIcon
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
-import { getOrderById } from '@/services/orderService';
+import { getOrderById, formatPaymentMethod } from '@/services/orderService';
 import { formatCurrency } from '@/utils/currency';
 
 interface StatusHistoryEntry {
@@ -104,16 +104,16 @@ const PAYMENT_STATUS_CONFIG: Record<PaymentStatus, { label: string; color: strin
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, token } = useAuthStore();
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login?redirect=/my-orders');
+    if (!user && !token) {
+      navigate('/login?redirect=/my-orders&reason=order');
     }
-  }, [user, navigate]);
+  }, [user, token, navigate]);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -129,8 +129,8 @@ export default function OrderDetailPage() {
         setIsLoading(false);
       }
     };
-    if (user) fetchOrder();
-  }, [id, user]);
+    if (user || token) fetchOrder();
+  }, [id, user, token]);
 
   if (isLoading) {
     return (
@@ -183,7 +183,7 @@ export default function OrderDetailPage() {
           </div>
         </div>
 
-        {/* Pay Now Banner */}
+        {/* Cash / Payment Info Banner */}
         {needsPayment && (
           <Link
             to={`/payment/${order.id}`}
@@ -192,8 +192,16 @@ export default function OrderDetailPage() {
             <div className="flex items-center gap-3">
               <CreditCard size={20} />
               <div>
-                <div className="font-bold text-sm">Segera Selesaikan Pembayaran</div>
-                <div className="text-xs text-amber-100">Pesanan akan dibatalkan jika tidak dibayar</div>
+                <div className="font-bold text-sm">
+                  {order.payment?.paymentMethod === 'CASH'
+                    ? 'Pembayaran Tunai di Tempat (Pending)'
+                    : 'Tampilkan Barcode QRIS & Konfirmasi Pembayaran'}
+                </div>
+                <div className="text-xs text-amber-100">
+                  {order.payment?.paymentMethod === 'CASH'
+                    ? `Metode: ${formatPaymentMethod(order.payment?.paymentMethod)} — Dibayar saat pesanan diterima`
+                    : 'Klik untuk menampilkan kode QRIS dan menyelesaikan konfirmasi pembayaran'}
+                </div>
               </div>
             </div>
             <ArrowRight size={18} className="flex-shrink-0" />

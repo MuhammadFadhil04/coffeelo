@@ -73,7 +73,7 @@ export const ReportsPage: React.FC = () => {
       {/* 1. Header Bar with Export */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black font-serif text-[#451B0E]">Laporan Penjualan & Pajak</h2>
+          <h2 className="text-xl font-black tracking-tight text-[#451B0E]">Laporan Penjualan & Pajak</h2>
           <p className="text-xs text-[#71351D]/80">Analisis komprehensif omzet, volume produk, dan setoran pajak.</p>
         </div>
         <button

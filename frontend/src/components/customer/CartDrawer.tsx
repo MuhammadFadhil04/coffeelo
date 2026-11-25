@@ -1,10 +1,12 @@
 import React from 'react';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
+import { useAuthStore } from '@/stores/authStore';
 import { Link } from 'react-router-dom';
 
 export const CartDrawer: React.FC = () => {
   const { items, isCartOpen, setIsCartOpen, updateQuantity, removeItem, getTotalPrice, getTotalCount } = useCartStore();
+  const { user } = useAuthStore();
 
   if (!isCartOpen) return null;
 
@@ -133,14 +135,34 @@ export const CartDrawer: React.FC = () => {
                 </div>
               </div>
 
-              <Link
-                to="/checkout"
-                onClick={() => setIsCartOpen(false)}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-coffee-orange hover:bg-coffee-orange/95 text-white font-bold text-sm transition shadow-card"
-              >
-                Proceed to Checkout
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              {user ? (
+                <Link
+                  to="/checkout"
+                  onClick={() => setIsCartOpen(false)}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-coffee-orange hover:bg-coffee-orange/95 text-white font-bold text-sm transition shadow-card"
+                >
+                  Proceed to Checkout
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              ) : (
+                <div className="space-y-2">
+                  <Link
+                    to="/login?redirect=%2Fcheckout&reason=order"
+                    onClick={() => setIsCartOpen(false)}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-coffee-orange hover:bg-coffee-orange/95 text-white font-bold text-xs uppercase tracking-wider transition shadow-card"
+                  >
+                    Masuk untuk Checkout
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <Link
+                    to="/register?redirect=%2Fcheckout&reason=order"
+                    onClick={() => setIsCartOpen(false)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-full bg-coffee-dark hover:bg-coffee-brown text-white font-bold text-xs uppercase tracking-wider transition"
+                  >
+                    Buat Akun Baru
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </div>

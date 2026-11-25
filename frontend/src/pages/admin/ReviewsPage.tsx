@@ -40,7 +40,7 @@ export const ReviewsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black font-serif text-[#451B0E]">Moderasi Ulasan Pelanggan</h2>
+          <h2 className="text-xl font-black tracking-tight text-[#451B0E]">Moderasi Ulasan Pelanggan</h2>
           <p className="text-xs text-[#71351D]/80">Pantau kepuasan rasa, feedback seduhan, dan moderasi konten ulasan.</p>
         </div>
         <button

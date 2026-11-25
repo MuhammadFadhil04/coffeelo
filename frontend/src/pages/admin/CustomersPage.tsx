@@ -73,7 +73,7 @@ export const CustomersPage: React.FC = () => {
       {/* 1. Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black font-serif text-[#451B0E]">Basis Data Pelanggan</h2>
+          <h2 className="text-xl font-black tracking-tight text-[#451B0E]">Basis Data Pelanggan</h2>
           <p className="text-xs text-[#71351D]/80">Lihat profil customer, kontak, riwayat transaksi, dan loyalitas.</p>
         </div>
         <button
@@ -234,7 +234,7 @@ export const CustomersPage: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-black/60 flex items-start sm:items-center justify-center p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-8 border border-[#E5D4C6] shadow-2xl space-y-6 my-auto max-h-[calc(100dvh-1.5rem)] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#E5D4C6] pb-4">
-              <h3 className="text-lg font-black font-serif text-[#451B0E]">Profil Detail Customer</h3>
+              <h3 className="text-lg font-black tracking-tight text-[#451B0E]">Profil Detail Customer</h3>
               <button
                 onClick={() => {
                   setSelectedCustomerId(null);

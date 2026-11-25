@@ -117,8 +117,8 @@ export const adminService = {
     return res.data.data;
   },
 
-  async updateOrderStatus(id: string, status: string, comment?: string) {
-    const res = await api.patch(`/admin/orders/${id}/status`, { status, comment });
+  async updateOrderStatus(id: string, status: string, comment?: string, markAsPaid?: boolean) {
+    const res = await api.patch(`/admin/orders/${id}/status`, { status, comment, markAsPaid });
     return res.data.data;
   },
 

@@ -14,11 +14,13 @@ import {
 import { Product } from '@/types';
 import { productService } from '@/services/productService';
 import { useCartStore } from '@/stores/cartStore';
+import { useAuthStore } from '@/stores/authStore';
 
 export const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { addItem, setIsCartOpen } = useCartStore();
+  const { user, openAuthModal } = useAuthStore();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -116,6 +118,10 @@ export const ProductDetailPage: React.FC = () => {
   };
 
   const handleAddToCart = () => {
+    if (!user) {
+      openAuthModal(`/menu/${product.slug}`);
+      return;
+    }
     addItem(product, selectedVariants, quantity, instructions);
     setIsAdded(true);
     if (timerRef.current) window.clearTimeout(timerRef.current);

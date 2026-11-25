@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Coffee, Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight, ShieldCheck, User } from 'lucide-react';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { Coffee, Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight, UserPlus, Info } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+
+const resolveSafeRedirect = (raw: string | null, fallback = '/menu'): string => {
+  if (raw && raw.startsWith('/') && !raw.startsWith('//')) {
+    return raw;
+  }
+  return fallback;
+};
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { login, isLoading, error, clearError } = useAuthStore();
 
   const [email, setEmail] = useState('');
@@ -13,84 +21,62 @@ export const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
-  const from = (location.state as any)?.from?.pathname || '/';
+  const stateFrom = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || null;
+  const redirectTarget = resolveSafeRedirect(searchParams.get('redirect') || stateFrom, '/menu');
+  const isOrderRedirect = searchParams.get('reason') === 'order' || Boolean(searchParams.get('redirect'));
+
+  const registerLink = `/register?redirect=${encodeURIComponent(redirectTarget)}${
+    isOrderRedirect ? '&reason=order' : ''
+  }`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError(null);
     clearError();
 
-    if (!email || !password) {
-      setLocalError('Please enter both email and password.');
+    if (!email.trim() || !password) {
+      setLocalError('Silakan masukkan email dan password Anda.');
       return;
     }
 
-    const res = await login(email, password);
+    const res = await login(email.trim(), password);
     if (res.success) {
-      // Determine redirection based on role
-      const user = useAuthStore.getState().user;
-      if (user?.role === 'ADMIN') {
-        navigate('/admin/dashboard', { replace: true });
+      const { adminUser, user } = useAuthStore.getState();
+      if (adminUser?.role === 'ADMIN' && email.trim().toLowerCase() === adminUser.email.toLowerCase()) {
+        navigate(redirectTarget.startsWith('/admin') ? redirectTarget : '/admin/dashboard', { replace: true });
+      } else if (user?.role === 'ADMIN') {
+        navigate(redirectTarget.startsWith('/admin') ? redirectTarget : '/admin/dashboard', { replace: true });
       } else {
-        navigate(from, { replace: true });
+        navigate(redirectTarget, { replace: true });
       }
     }
   };
 
-  const handleQuickFill = (role: 'admin' | 'customer') => {
-    setLocalError(null);
-    clearError();
-    if (role === 'admin') {
-      setEmail('admin@coffeelo.com');
-      setPassword('Admin123!');
-    } else {
-      setEmail('customer@coffeelo.com');
-      setPassword('Customer123!');
-    }
-  };
-
   return (
-    <div className="min-h-screen pt-28 pb-20 bg-coffee-cream flex items-center justify-center px-4">
+    <div className="min-h-screen pt-28 pb-16 bg-coffee-cream flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-white rounded-4xl p-6 sm:p-10 border border-coffee-beige shadow-card space-y-6">
-        
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-full bg-coffee-dark mx-auto flex items-center justify-center text-white shadow-subtle">
+          <div className="w-12 h-12 rounded-2xl bg-coffee-dark mx-auto flex items-center justify-center text-white shadow-subtle">
             <Coffee className="w-6 h-6 text-coffee-cream" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-coffee-dark tracking-tight">
-            Welcome to Coffeelo
+            Masuk ke Coffeelo
           </h1>
-          <p className="text-xs text-coffee-brown">
-            Sign in to access your orders, saved addresses, and bean preferences.
+          <p className="text-xs text-coffee-brown leading-relaxed">
+            Masuk menggunakan akun Anda untuk memesan menu kopi, menyimpan alamat, dan melacak pesanan.
           </p>
         </div>
 
-        {/* Quick Demo Credentials Banner */}
-        <div className="p-3.5 rounded-2xl bg-coffee-cream/60 border border-coffee-beige space-y-2 text-xs">
-          <div className="flex items-center justify-between text-[11px] font-bold text-coffee-brown uppercase tracking-wider">
-            <span>Demo Test Accounts:</span>
-            <span className="text-coffee-orange">Click to fill</span>
+        {/* Contextual Order Auth Prompt */}
+        {isOrderRedirect && (
+          <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
+            <Info className="w-4 h-4 text-coffee-orange shrink-0 mt-0.5" />
+            <span>
+              Pelanggan wajib masuk untuk melakukan pemesanan. Belum memiliki akun? Silakan buat akun baru di bawah.
+            </span>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickFill('customer')}
-              className="px-3 py-1.5 rounded-xl bg-white hover:bg-coffee-beige/60 text-coffee-dark text-[11px] font-bold border border-coffee-beige/80 transition flex items-center justify-center gap-1.5"
-            >
-              <User className="w-3 h-3 text-coffee-brown" />
-              Customer
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('admin')}
-              className="px-3 py-1.5 rounded-xl bg-white hover:bg-coffee-beige/60 text-coffee-dark text-[11px] font-bold border border-coffee-beige/80 transition flex items-center justify-center gap-1.5"
-            >
-              <ShieldCheck className="w-3 h-3 text-coffee-orange" />
-              Admin
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* Error Alert Banner */}
         {(localError || error) && (
@@ -103,45 +89,45 @@ export const LoginPage: React.FC = () => {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-coffee-dark uppercase tracking-wider block">
-              Email Address:
+            <label htmlFor="login-email" className="text-xs font-bold text-coffee-dark uppercase tracking-wider block">
+              Alamat Email
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-coffee-brown absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
+                id="login-email"
                 type="email"
                 required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@domain.com"
+                placeholder="nama@email.com"
                 className="w-full pl-10 pr-4 py-3 rounded-2xl bg-coffee-cream/40 border border-coffee-beige text-xs text-coffee-dark focus:outline-none focus:ring-2 focus:ring-coffee-orange/40"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-coffee-dark uppercase tracking-wider block">
-                Password:
-              </label>
-              <span className="text-[11px] text-coffee-brown hover:underline cursor-pointer">
-                Forgot password?
-              </span>
-            </div>
+            <label htmlFor="login-password" className="text-xs font-bold text-coffee-dark uppercase tracking-wider block">
+              Password
+            </label>
             <div className="relative">
               <Lock className="w-4 h-4 text-coffee-brown absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
+                id="login-password"
                 type={showPassword ? 'text' : 'password'}
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Masukkan password Anda"
                 className="w-full pl-10 pr-10 py-3 rounded-2xl bg-coffee-cream/40 border border-coffee-beige text-xs text-coffee-dark focus:outline-none focus:ring-2 focus:ring-coffee-orange/40"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-coffee-brown hover:text-coffee-dark"
+                aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-coffee-brown hover:text-coffee-dark cursor-pointer"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -151,27 +137,32 @@ export const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3.5 rounded-full bg-coffee-orange hover:bg-coffee-orange/90 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-card flex items-center justify-center gap-2 active:scale-95 disabled:opacity-70 mt-2"
+            className="w-full py-3.5 rounded-full bg-coffee-orange hover:bg-coffee-orange/90 text-white font-extrabold text-xs uppercase tracking-wider transition-colors shadow-card flex items-center justify-center gap-2 disabled:opacity-70 mt-2 cursor-pointer"
           >
             {isLoading ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                Sign In to Account
+                Masuk ke Akun
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
         </form>
 
-        {/* Footer Link */}
-        <div className="text-center pt-2 text-xs text-coffee-brown border-t border-coffee-beige/60">
-          <span>Don't have an account yet? </span>
-          <Link to="/register" className="font-bold text-coffee-orange hover:underline">
-            Create an account
+        {/* Clear Account Creation Callout */}
+        <div className="pt-4 border-t border-coffee-beige/70 space-y-3 text-center">
+          <p className="text-xs font-semibold text-coffee-brown">
+            Belum punya akun pelanggan Coffeelo?
+          </p>
+          <Link
+            to={registerLink}
+            className="w-full py-3 px-4 rounded-full bg-coffee-cream hover:bg-coffee-beige/80 border border-coffee-beige text-coffee-dark font-extrabold text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+          >
+            <UserPlus className="w-4 h-4 text-coffee-orange" />
+            Buat Akun Baru
           </Link>
         </div>
-
       </div>
     </div>
   );

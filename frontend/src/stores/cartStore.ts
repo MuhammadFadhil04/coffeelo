@@ -68,7 +68,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
   orderType: 'PICKUP',
   fulfillmentType: 'PICKUP',
   storeLocation: 'Senopati Flagship House (Jl. Senopati No. 88)',
-  selectedStore: null,
+  selectedStore: 'coffeelo-main',
   deliveryAddress: '',
   deliveryNotes: '',
   promoCode: null,
@@ -173,7 +173,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
       promoCode: null,
       discountPercent: 0,
       promoDiscount: 0,
-      selectedStore: null,
+      selectedStore: 'coffeelo-main',
     }),
 
   applyPromo: (code) => {

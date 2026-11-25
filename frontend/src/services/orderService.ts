@@ -13,12 +13,26 @@ export interface ShippingAddressInput {
   notes?: string;
 }
 
+export type CheckoutPaymentMethod = 'QRIS' | 'CASH';
+
+export const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  QRIS: 'QRIS (Scan Barcode)',
+  CASH: 'Cash / Bayar di Tempat',
+};
+
+export const formatPaymentMethod = (method?: string | null): string => {
+  if (!method) return 'Pembayaran Online';
+  return PAYMENT_METHOD_LABELS[method] || method;
+};
+
 export interface CreateOrderPayload {
   fulfillmentType: 'PICKUP' | 'DELIVERY';
+  paymentMethod: CheckoutPaymentMethod;
   storeLocation?: string;
   shippingAddress?: ShippingAddressInput;
   items: Array<{
     productId: string;
+    slug?: string;
     selectedVariants?: Record<string, string>;
     quantity: number;
     specialInstructions?: string;
@@ -137,9 +151,11 @@ export const createOrder = async (payload: CreateOrderPayload) => {
   try {
     const response = await api.post<{ data: ApiOrder }>('/orders', {
       type: payload.fulfillmentType,
+      paymentMethod: payload.paymentMethod,
       storeLocation: payload.storeLocation,
       items: payload.items.map((item) => ({
         productId: item.productId,
+        slug: item.slug,
         quantity: item.quantity,
         selectedVariants: item.selectedVariants,
         specialInstructions: item.specialInstructions,
@@ -188,11 +204,21 @@ export const getPaymentStatus = async (orderId: string) => {
   return normalizePayment(response.data.data);
 };
 
+export const confirmQrisPayment = async (orderId: string) => {
+  try {
+    const response = await api.post<{ data: ApiOrder }>(`/payments/${orderId}/confirm-qris`);
+    return normalizeOrder(response.data.data);
+  } catch (error) {
+    throw new Error(apiErrorMessage(error, 'Gagal mengonfirmasi pembayaran QRIS.'));
+  }
+};
+
 export const orderService = {
   createOrder,
   getMyOrders,
   getOrderById,
   getPaymentStatus,
+  confirmQrisPayment,
 };
 
 export default orderService;

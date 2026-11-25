@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Droplet, Award, Zap, Coffee, ArrowRight } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
+import { useAuthStore } from '@/stores/authStore';
 
 interface ShowcaseItem {
   id: string;
@@ -69,9 +70,14 @@ const SHOWCASE_ITEMS: ShowcaseItem[] = [
 export const ProductShowcaseBanner: React.FC = () => {
   const [activeIdx, setActiveIdx] = useState(0);
   const { addItem, setIsCartOpen } = useCartStore();
+  const { user, openAuthModal } = useAuthStore();
   const current = SHOWCASE_ITEMS[activeIdx];
 
   const handleQuickAdd = () => {
+    if (!user) {
+      openAuthModal('/menu');
+      return;
+    }
     addItem({
       id: current.id,
       categoryId: 'cat-signature',
@@ -89,11 +95,11 @@ export const ProductShowcaseBanner: React.FC = () => {
   };
 
   return (
-    <section id="showcase" className="py-24 bg-[#EFE6DD] relative overflow-hidden">
+    <section id="showcase" className="py-14 lg:py-16 bg-[#EFE6DD] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-8">
           <div>
             <span className="text-xs font-bold uppercase tracking-widest text-coffee-orange">
               Curator's Highlights

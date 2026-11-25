@@ -1,7 +1,8 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import CustomerLayout from '@/layouts/CustomerLayout';
 import AdminLayout from '@/layouts/AdminLayout';
+import { useAuthStore } from '@/stores/authStore';
 import { Coffee, ArrowLeft, Loader2 } from 'lucide-react';
 
 // Lazy Loaded Customer Pages
@@ -17,7 +18,7 @@ const MyOrdersPage = React.lazy(() => import('@/pages/customer/MyOrdersPage'));
 const OrderDetailPage = React.lazy(() => import('@/pages/customer/OrderDetailPage'));
 const ProfilePage = React.lazy(() => import('@/pages/customer/ProfilePage'));
 
-// Lazy Loaded Admin Pages (Phase 6)
+// Lazy Loaded Admin Pages
 const DashboardOverviewPage = React.lazy(() => import('@/pages/admin/DashboardOverviewPage'));
 const OrdersPage = React.lazy(() => import('@/pages/admin/OrdersPage'));
 const ProductsPage = React.lazy(() => import('@/pages/admin/ProductsPage'));
@@ -28,7 +29,6 @@ const PaymentsPage = React.lazy(() => import('@/pages/admin/PaymentsPage'));
 const ReportsPage = React.lazy(() => import('@/pages/admin/ReportsPage'));
 const SettingsPage = React.lazy(() => import('@/pages/admin/SettingsPage'));
 
-// Suspense Fallback Loader
 const PageLoader: React.FC = () => (
   <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-3">
     <div className="w-12 h-12 rounded-2xl bg-amber-100 text-[#B6370B] flex items-center justify-center animate-pulse">
@@ -40,6 +40,18 @@ const PageLoader: React.FC = () => (
     </span>
   </div>
 );
+
+const ProtectedCustomerRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const { user, token } = useAuthStore();
+  const location = useLocation();
+
+  if (!user && !token) {
+    const redirect = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/login?redirect=${redirect}&reason=order`} replace />;
+  }
+
+  return children;
+};
 
 const NotFoundPage: React.FC = () => (
   <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4 py-20 space-y-4">
@@ -75,14 +87,49 @@ export const App: React.FC = () => {
             <Route path="cart" element={<CartPage />} />
             <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegisterPage />} />
-            <Route path="checkout" element={<CheckoutPage />} />
-            <Route path="payment/:orderId" element={<PaymentPage />} />
-            <Route path="my-orders" element={<MyOrdersPage />} />
-            <Route path="my-orders/:id" element={<OrderDetailPage />} />
-            <Route path="profile" element={<ProfilePage />} />
+            <Route
+              path="checkout"
+              element={
+                <ProtectedCustomerRoute>
+                  <CheckoutPage />
+                </ProtectedCustomerRoute>
+              }
+            />
+            <Route
+              path="payment/:orderId"
+              element={
+                <ProtectedCustomerRoute>
+                  <PaymentPage />
+                </ProtectedCustomerRoute>
+              }
+            />
+            <Route
+              path="my-orders"
+              element={
+                <ProtectedCustomerRoute>
+                  <MyOrdersPage />
+                </ProtectedCustomerRoute>
+              }
+            />
+            <Route
+              path="my-orders/:id"
+              element={
+                <ProtectedCustomerRoute>
+                  <OrderDetailPage />
+                </ProtectedCustomerRoute>
+              }
+            />
+            <Route
+              path="profile"
+              element={
+                <ProtectedCustomerRoute>
+                  <ProfilePage />
+                </ProtectedCustomerRoute>
+              }
+            />
           </Route>
 
-          {/* Admin Portal Routes (Phase 6) */}
+          {/* Admin Portal Routes */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardOverviewPage />} />

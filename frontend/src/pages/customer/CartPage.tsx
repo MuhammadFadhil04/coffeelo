@@ -16,8 +16,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
+import { useAuthStore } from '@/stores/authStore';
 
 export const CartPage: React.FC = () => {
+  const { user } = useAuthStore();
   const {
     items,
     updateQuantity,
@@ -396,14 +398,35 @@ export const CartPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Checkout Action Button leading to Phase 5 Checkout */}
-              <Link
-                to="/checkout"
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-full bg-coffee-orange hover:bg-coffee-orange/95 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-card hover:shadow-elevation active:scale-95"
-              >
-                Proceed to Checkout
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              {/* Checkout Action Button */}
+              {user ? (
+                <Link
+                  to="/checkout"
+                  className="w-full flex items-center justify-center gap-2 py-4 rounded-full bg-coffee-orange hover:bg-coffee-orange/95 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-card hover:shadow-elevation active:scale-95"
+                >
+                  Proceed to Checkout
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              ) : (
+                <div className="space-y-2.5 p-4 rounded-2xl bg-coffee-cream/70 border border-coffee-beige text-center">
+                  <p className="text-xs font-semibold text-coffee-dark">
+                    Masuk ke akun Anda terlebih dahulu untuk melanjutkan pemesanan.
+                  </p>
+                  <Link
+                    to="/login?redirect=%2Fcheckout&reason=order"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-coffee-orange hover:bg-coffee-orange/95 text-white font-extrabold text-xs uppercase tracking-wider transition shadow-card"
+                  >
+                    Masuk ke Akun
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <Link
+                    to="/register?redirect=%2Fcheckout&reason=order"
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-coffee-dark hover:bg-coffee-brown text-white font-extrabold text-xs uppercase tracking-wider transition"
+                  >
+                    Buat Akun Baru
+                  </Link>
+                </div>
+              )}
 
               {/* Trust Badges */}
               <div className="pt-2 flex items-center justify-around border-t border-coffee-beige/60 text-[10px] text-coffee-brown font-semibold">

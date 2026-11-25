@@ -1,4 +1,5 @@
 import { OrderStatus, PaymentStatus, Prisma, Role } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
 import prisma from '../config/database.js';
 import { releaseOrderInventory } from '../utils/order-inventory.util.js';
 import { midtransService } from './midtrans.service.js';
@@ -268,6 +269,98 @@ export class PaymentService {
     }
 
     return order.payment;
+  }
+
+  async confirmQrisPayment(orderIdOrNumber: string, userId: string, role: Role) {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderIdOrNumber);
+    const targetOrder = await prisma.order.findFirst({
+      where: isUuid ? { id: orderIdOrNumber } : { orderNumber: orderIdOrNumber },
+      include: { payment: true },
+    });
+
+    if (!targetOrder?.payment) {
+      throw new AppError('Data pembayaran pesanan tidak ditemukan.', 404);
+    }
+
+    if (role !== Role.ADMIN && targetOrder.userId !== userId) {
+      throw new AppError('Forbidden: Anda tidak memiliki akses ke pesanan ini.', 403);
+    }
+
+    if (targetOrder.payment.paymentMethod !== 'QRIS') {
+      throw new AppError('Konfirmasi instan hanya berlaku untuk metode pembayaran QRIS.', 400);
+    }
+
+    if (targetOrder.status === OrderStatus.CANCELLED) {
+      throw new AppError('Pesanan yang sudah dibatalkan tidak dapat dibayar.', 409);
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const current = await tx.order.findUnique({
+        where: { id: targetOrder.id },
+        include: {
+          user: { select: { id: true, name: true, email: true, phone: true } },
+          items: { include: { options: true } },
+          payment: true,
+          statusHistory: { orderBy: { createdAt: 'desc' } },
+        },
+      });
+
+      if (!current?.payment) {
+        throw new AppError('Data pembayaran pesanan tidak ditemukan.', 404);
+      }
+
+      if (current.payment.status === PaymentStatus.PAID) {
+        const { payloadJson: _omitted, ...safeExisting } = current.payment;
+        return { ...current, payment: safeExisting };
+      }
+
+      if (current.payment.status !== PaymentStatus.PENDING) {
+        throw new AppError(`Pembayaran dalam status ${current.payment.status} tidak dapat dikonfirmasi.`, 409);
+      }
+
+      const txnId = `QRIS-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${randomUUID()
+        .replace(/-/g, '')
+        .slice(0, 8)
+        .toUpperCase()}`;
+
+      await tx.payment.updateMany({
+        where: { orderId: current.id, status: PaymentStatus.PENDING },
+        data: {
+          status: PaymentStatus.PAID,
+          transactionId: txnId,
+          paidAt: new Date(),
+        },
+      });
+
+      if (current.status === OrderStatus.PENDING) {
+        const confirmed = await tx.order.updateMany({
+          where: { id: current.id, status: OrderStatus.PENDING },
+          data: { status: OrderStatus.CONFIRMED },
+        });
+        if (confirmed.count === 1) {
+          await tx.orderStatusHistory.create({
+            data: {
+              orderId: current.id,
+              status: OrderStatus.CONFIRMED,
+              comment: 'Pembayaran QRIS berhasil dikonfirmasi. Pesanan langsung diproses barista.',
+            },
+          });
+        }
+      }
+
+      const refreshed = await tx.order.findUniqueOrThrow({
+        where: { id: current.id },
+        include: {
+          user: { select: { id: true, name: true, email: true, phone: true } },
+          items: { include: { options: true } },
+          payment: true,
+          statusHistory: { orderBy: { createdAt: 'desc' } },
+        },
+      });
+
+      const { payloadJson: _omitted, ...safePayment } = refreshed.payment!;
+      return { ...refreshed, payment: safePayment };
+    });
   }
 }
 

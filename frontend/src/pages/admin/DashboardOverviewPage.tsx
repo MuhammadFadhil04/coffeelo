@@ -102,7 +102,7 @@ export const DashboardOverviewPage: React.FC = () => {
       {/* 1. Header Bar with Refresh & Period Filter */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black font-serif text-[#451B0E]">Ringkasan Performa Bisnis</h2>
+          <h2 className="text-xl font-black tracking-tight text-[#451B0E]">Ringkasan Performa Bisnis</h2>
           <p className="text-xs text-[#71351D]/80">Data transaksi real-time dari database Coffeelo.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">

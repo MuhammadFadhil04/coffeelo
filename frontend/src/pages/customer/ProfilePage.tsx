@@ -14,7 +14,7 @@ export const ProfilePage: React.FC = () => {
           <div className="w-12 h-12 rounded-full bg-amber-100 text-[#71351D] flex items-center justify-center mx-auto">
             <User className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-black font-serif text-[#451B0E]">Masuk ke Akun Anda</h2>
+          <h2 className="text-xl font-black tracking-tight text-[#451B0E]">Masuk ke Akun Anda</h2>
           <p className="text-xs text-[#71351D]/80">
             Silakan masuk untuk melihat profil, melacak pesanan, dan menyimpan alamat pengiriman.
           </p>
@@ -49,7 +49,7 @@ export const ProfilePage: React.FC = () => {
           />
           <div>
             <div className="flex items-center justify-center sm:justify-start gap-2">
-              <h2 className="text-2xl font-black font-serif text-[#451B0E]">{user.name}</h2>
+              <h2 className="text-2xl font-black tracking-tight text-[#451B0E]">{user.name}</h2>
               {isAdmin() && (
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#B6370B] text-white shadow-sm">
                   Admin

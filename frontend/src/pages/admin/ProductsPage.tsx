@@ -215,7 +215,7 @@ export const ProductsPage: React.FC = () => {
       {/* 1. Header with Add Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black font-serif text-[#451B0E]">Katalog Produk Kopi</h2>
+          <h2 className="text-xl font-black tracking-tight text-[#451B0E]">Katalog Produk Kopi</h2>
           <p className="text-xs text-[#71351D]/80">Kelola harga, foto, stok, dan varian menu Coffeelo.</p>
         </div>
         <button
@@ -377,7 +377,7 @@ export const ProductsPage: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-black/60 flex items-start sm:items-center justify-center p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-8 border border-[#E5D4C6] shadow-2xl space-y-6 my-auto max-h-[calc(100dvh-1.5rem)] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#E5D4C6] pb-4">
-              <h3 className="text-lg font-black font-serif text-[#451B0E]">
+              <h3 className="text-lg font-black tracking-tight text-[#451B0E]">
                 {editingProduct ? 'Edit Informasi Produk' : 'Tambah Produk Baru'}
               </h3>
               <button

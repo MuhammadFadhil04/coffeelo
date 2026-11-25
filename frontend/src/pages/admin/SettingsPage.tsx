@@ -63,7 +63,7 @@ export const SettingsPage: React.FC = () => {
     <div className="max-w-3xl space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-black font-serif text-[#451B0E]">Pengaturan Toko & Operasional</h2>
+        <h2 className="text-xl font-black tracking-tight text-[#451B0E]">Pengaturan Toko & Operasional</h2>
         <p className="text-xs text-[#71351D]/80">Konfigurasi profil gerai Coffeelo, tarif ongkir, pajak, dan jam buka.</p>
       </div>
 

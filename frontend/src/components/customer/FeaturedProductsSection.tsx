@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, ShoppingBag, Check, Sparkles } from 'lucide-react';
+import { Search, ShoppingBag, Check, Sparkles, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useCartStore } from '@/stores/cartStore';
+import { useAuthStore } from '@/stores/authStore';
 import { Product } from '@/types';
 import { productService } from '@/services/productService';
 import { formatCurrency } from '@/utils/currency';
 
-// Curated specialty coffee catalog matching visual reference in Image 3
 const FEATURED_COFFEES: Product[] = [
   {
     id: 'prod-cappuccino',
@@ -98,6 +99,7 @@ export const FeaturedProductsSection: React.FC = () => {
   const [addedItemIds, setAddedItemIds] = useState<Record<string, boolean>>({});
   const timersRef = useRef<number[]>([]);
   const { addItem, setIsCartOpen } = useCartStore();
+  const { user, openAuthModal } = useAuthStore();
 
   useEffect(() => {
     productService.getProducts().then((data) => {
@@ -131,31 +133,44 @@ export const FeaturedProductsSection: React.FC = () => {
   });
 
   const handleOrder = (coffee: Product) => {
-    addItem(coffee, { Size: 'Regular' }, 1);
-    
-    // Quick success flash state
+    if (!user) {
+      openAuthModal(`/menu/${coffee.slug}`);
+      return;
+    }
+
+    const defaultVariants: Record<string, string> = {};
+    if (coffee.variants && coffee.variants.length > 0) {
+      const seen = new Set<string>();
+      for (const v of coffee.variants) {
+        if (!seen.has(v.name)) {
+          defaultVariants[v.name] = v.optionValue;
+          seen.add(v.name);
+        }
+      }
+    }
+
+    addItem(coffee, defaultVariants, 1);
+
     setAddedItemIds((prev) => ({ ...prev, [coffee.id]: true }));
     const timer = window.setTimeout(() => {
       setAddedItemIds((prev) => ({ ...prev, [coffee.id]: false }));
     }, 1500);
     timersRef.current.push(timer);
 
-    // Open cart drawer so user sees instant feedback
     setIsCartOpen(true);
   };
 
   return (
-    <section id="collection" className="py-24 bg-coffee-cream border-t border-coffee-beige/60">
+    <section id="collection" className="py-14 lg:py-16 bg-coffee-cream border-t border-coffee-beige/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         {/* Header Row: Title & Search bar */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div className="space-y-2">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-8">
+          <div className="space-y-1.5">
             <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-coffee-orange">
               <Sparkles className="w-3.5 h-3.5" />
               Specialty Lineup
             </div>
-            <h2 className="text-4xl sm:text-5xl font-black text-coffee-dark tracking-tight">
+            <h2 className="text-3xl sm:text-5xl font-black text-coffee-dark tracking-tight">
               Our Coffee
             </h2>
             <p className="text-sm text-coffee-brown max-w-md">
@@ -163,7 +178,6 @@ export const FeaturedProductsSection: React.FC = () => {
             </p>
           </div>
 
-          {/* Search Bar matching Image 3 */}
           <div className="relative w-full md:w-80">
             <Search className="w-4 h-4 text-coffee-brown absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
@@ -177,82 +191,105 @@ export const FeaturedProductsSection: React.FC = () => {
         </div>
 
         {/* Category Pills Filter */}
-        <div className="flex items-center gap-2.5 overflow-x-auto py-2 mb-8 no-scrollbar">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-                selectedCategory === cat.id
-                  ? 'bg-coffee-dark text-white shadow-card scale-105'
-                  : 'bg-white/80 hover:bg-white text-coffee-dark border border-coffee-beige'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
+        <div className="flex items-center justify-between gap-4 mb-7">
+          <div className="flex items-center gap-2.5 overflow-x-auto py-1 no-scrollbar">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
+                  selectedCategory === cat.id
+                    ? 'bg-coffee-dark text-white shadow-card'
+                    : 'bg-white/85 hover:bg-white text-coffee-dark border border-coffee-beige'
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          <Link
+            to="/menu"
+            className="hidden md:inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-coffee-orange hover:text-coffee-dark transition-colors shrink-0"
+          >
+            View All Menu
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
 
-        {/* 6-Item Grid matching reference in Image 3 */}
+        {/* Product Grid */}
         {filteredCoffees.length === 0 ? (
-          <div className="text-center py-16 bg-white/40 rounded-3xl border border-coffee-beige">
+          <div className="text-center py-14 bg-white/50 rounded-3xl border border-coffee-beige">
             <p className="text-sm font-bold text-coffee-dark">No coffee matches your search.</p>
             <p className="text-xs text-coffee-brown mt-1">Try another keyword or category.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {filteredCoffees.map((coffee) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCoffees.slice(0, 6).map((coffee) => {
               const isAdded = addedItemIds[coffee.id];
               return (
                 <div
                   key={coffee.id}
-                  className="group relative rounded-4xl bg-[#DFD0C3] p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-elevation hover:-translate-y-1 border border-coffee-beige/60"
+                  className="group relative rounded-3xl bg-[#DFD0C3] p-5 flex flex-col justify-between transition-shadow duration-300 hover:shadow-elevation border border-coffee-beige/70"
                 >
-                  {/* Product Cup Image Container */}
-                  <div className="w-full aspect-[4/3] rounded-3xl overflow-hidden bg-white/40 flex items-center justify-center p-4 mb-5 relative">
-                    <img
-                      src={coffee.imageUrl}
-                      alt={coffee.name}
-                      className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500 shadow-sm"
-                    />
-                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-extrabold uppercase tracking-wider text-coffee-dark">
-                      Fresh Brew
-                    </span>
-                  </div>
-
-                  {/* Title and Price Row */}
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-baseline justify-between gap-2">
-                      <h3 className="font-extrabold text-lg sm:text-xl text-coffee-dark group-hover:text-coffee-orange transition-colors">
-                        {coffee.name}
-                      </h3>
-                      <span className="font-extrabold text-lg text-coffee-dark">
-                        {formatCurrency(coffee.basePrice)}
+                  <div>
+                    <Link
+                      to={`/menu/${coffee.slug}`}
+                      className="block w-full aspect-[4/3] rounded-2xl overflow-hidden bg-white/40 p-3 mb-4 relative"
+                    >
+                      <img
+                        src={coffee.imageUrl}
+                        alt={coffee.name}
+                        className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500 shadow-sm"
+                      />
+                      <span className="absolute top-5 left-5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-extrabold uppercase tracking-wider text-coffee-dark">
+                        Fresh Brew
                       </span>
+                    </Link>
+
+                    <div className="space-y-1.5 mb-5">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <Link
+                          to={`/menu/${coffee.slug}`}
+                          className="font-extrabold text-lg text-coffee-dark group-hover:text-coffee-orange transition-colors"
+                        >
+                          {coffee.name}
+                        </Link>
+                        <span className="font-black text-lg text-coffee-dark shrink-0">
+                          {formatCurrency(coffee.basePrice)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-coffee-dark/75 line-clamp-2 leading-relaxed">
+                        {coffee.description}
+                      </p>
                     </div>
-                    <p className="text-xs text-coffee-dark/70 line-clamp-2 leading-relaxed">
-                      {coffee.description}
-                    </p>
                   </div>
 
-                  {/* Centered Order Pill Button matching Image 3 */}
-                  <div className="flex justify-center">
+                  <div className="flex items-center gap-2.5">
+                    <Link
+                      to={`/menu/${coffee.slug}`}
+                      className="px-4 py-2.5 rounded-full bg-white/60 hover:bg-white text-coffee-dark text-xs font-bold transition-colors border border-white/60"
+                    >
+                      Detail
+                    </Link>
                     <button
+                      type="button"
                       onClick={() => handleOrder(coffee)}
-                      className={`w-full sm:w-auto px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm ${
+                      className={`flex-1 px-5 py-2.5 rounded-full text-xs font-extrabold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer ${
                         isAdded
                           ? 'bg-emerald-600 text-white'
-                          : 'bg-white/80 hover:bg-white text-coffee-dark hover:text-coffee-orange hover:shadow-card active:scale-95'
+                          : 'bg-coffee-dark hover:bg-coffee-orange text-white'
                       }`}
                     >
                       {isAdded ? (
                         <>
                           <Check className="w-3.5 h-3.5" />
-                          Added to Basket
+                          Added
                         </>
                       ) : (
                         <>
-                          <ShoppingBag className="w-3.5 h-3.5 text-coffee-orange" />
+                          <ShoppingBag className="w-3.5 h-3.5 text-coffee-orange group-hover:text-white transition-colors" />
                           Order
                         </>
                       )}
@@ -263,7 +300,6 @@ export const FeaturedProductsSection: React.FC = () => {
             })}
           </div>
         )}
-
       </div>
     </section>
   );

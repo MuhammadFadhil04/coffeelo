@@ -4,8 +4,10 @@ import { Link } from 'react-router-dom';
 import { Product, Category } from '@/types';
 import { productService } from '@/services/productService';
 import { QuickViewModal } from '@/components/customer/QuickViewModal';
+import { useAuthStore } from '@/stores/authStore';
 
 export const MenuPage: React.FC = () => {
+  const { user, openAuthModal } = useAuthStore();
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -268,11 +270,17 @@ export const MenuPage: React.FC = () => {
                     View Details
                   </Link>
                   <button
-                    onClick={() => setQuickViewProduct(product)}
-                    className="px-4 py-2.5 rounded-full bg-coffee-orange hover:bg-coffee-orange/90 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm active:scale-95"
+                    onClick={() => {
+                      if (!user) {
+                        openAuthModal(`/menu/${product.slug}`);
+                        return;
+                      }
+                      setQuickViewProduct(product);
+                    }}
+                    className="px-4 py-2.5 rounded-full bg-coffee-orange hover:bg-coffee-orange/90 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm active:scale-95 cursor-pointer"
                   >
                     <ShoppingBag className="w-3.5 h-3.5" />
-                    Customize
+                    Order
                   </button>
                 </div>
               </div>

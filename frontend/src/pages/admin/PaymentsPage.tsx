@@ -61,7 +61,7 @@ export const PaymentsPage: React.FC = () => {
       {/* 1. Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black font-serif text-[#451B0E]">Log Transaksi Pembayaran</h2>
+          <h2 className="text-xl font-black tracking-tight text-[#451B0E]">Log Transaksi Pembayaran</h2>
           <p className="text-xs text-[#71351D]/80">Monitoring payment gateway Midtrans dan rekonsiliasi transfer.</p>
         </div>
         <button

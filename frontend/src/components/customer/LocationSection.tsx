@@ -3,7 +3,7 @@ import { MapPin, Phone, Mail, Instagram, Clock, Navigation } from 'lucide-react'
 
 export const LocationSection: React.FC = () => {
   return (
-    <section id="location" className="py-20 bg-[#CBA492] text-coffee-dark relative overflow-hidden">
+    <section id="location" className="py-14 lg:py-16 bg-[#CBA492] text-coffee-dark relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           

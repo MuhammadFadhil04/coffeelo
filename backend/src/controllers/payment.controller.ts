@@ -39,6 +39,19 @@ export class PaymentController {
       return sendError(res, error.message || 'Payment not found.', null, resolveErrorStatus(error, 500));
     }
   }
+
+  async confirmQris(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        return sendError(res, 'Authentication required.', null, 401);
+      }
+      const orderId = req.params.orderId as string;
+      const order = await paymentService.confirmQrisPayment(orderId, req.user.id, req.user.role);
+      return sendSuccess(res, order, 'Pembayaran QRIS berhasil dikonfirmasi.');
+    } catch (error: any) {
+      return sendError(res, error.message || 'Gagal mengonfirmasi pembayaran QRIS.', null, resolveErrorStatus(error, 500));
+    }
+  }
 }
 
 export const paymentController = new PaymentController();

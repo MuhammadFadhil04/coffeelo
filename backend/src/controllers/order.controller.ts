@@ -71,8 +71,13 @@ export class OrderController {
   async updateStatus(req: Request, res: Response) {
     try {
       const id = req.params.id as string;
-      const { status, comment } = req.body;
-      const updated = await orderService.updateOrderStatus(id, status as OrderStatus, comment);
+      const { status, comment, markAsPaid } = req.body;
+      const updated = await orderService.updateOrderStatus(
+        id,
+        status as OrderStatus,
+        comment,
+        markAsPaid
+      );
       return sendSuccess(res, updated, `Order status updated to ${status}.`);
     } catch (error: any) {
       return sendError(res, error.message || 'Failed to update order status.', null, resolveErrorStatus(error, 500));

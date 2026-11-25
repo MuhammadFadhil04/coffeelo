@@ -42,6 +42,8 @@ export const OrdersPage: React.FC = () => {
   const [statusModalOrder, setStatusModalOrder] = useState<any | null>(null);
   const [targetStatus, setTargetStatus] = useState<string>('CONFIRMED');
   const [statusComment, setStatusComment] = useState('');
+  const [markAsPaid, setMarkAsPaid] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const fetchOrders = async (page = 1) => {
@@ -77,23 +79,26 @@ export const OrdersPage: React.FC = () => {
     if (!statusModalOrder) return;
 
     setIsUpdatingStatus(true);
+    setModalError(null);
     try {
-      await adminService.updateOrderStatus(
+      const updated = await adminService.updateOrderStatus(
         statusModalOrder.id,
         targetStatus,
-        statusComment.trim() || undefined
+        statusComment.trim() || undefined,
+        targetStatus === 'COMPLETED' ? true : markAsPaid
       );
 
       // Refresh list and detail
       await fetchOrders(pagination.page);
       if (selectedOrder && selectedOrder.id === statusModalOrder.id) {
-        setSelectedOrder((prev: any) => ({ ...prev, status: targetStatus }));
+        setSelectedOrder(updated);
       }
 
       setStatusModalOrder(null);
       setStatusComment('');
+      setMarkAsPaid(false);
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Gagal mengubah status pesanan.');
+      setModalError(err.response?.data?.message || err.message || 'Gagal mengubah status pesanan.');
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -125,7 +130,7 @@ export const OrdersPage: React.FC = () => {
       {/* 1. Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black font-serif text-[#451B0E]">Manajemen Pesanan</h2>
+          <h2 className="text-xl font-black tracking-tight text-[#451B0E]">Manajemen Pesanan</h2>
           <p className="text-xs text-[#71351D]/80">Pantau seluruh alur pesanan customer, pembayaran, dan pengiriman.</p>
         </div>
         <button
@@ -250,15 +255,20 @@ export const OrdersPage: React.FC = () => {
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span
-                        className={`inline-flex px-2 py-0.5 rounded text-[10px] font-black uppercase ${
-                          ord.payment?.status === 'PAID'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        {ord.payment?.status || 'PENDING'}
-                      </span>
+                      <div className="flex flex-col items-start gap-0.5">
+                        <span
+                          className={`inline-flex px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                            ord.payment?.status === 'PAID'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}
+                        >
+                          {ord.payment?.status || 'PENDING'}
+                        </span>
+                        <span className="text-[10px] font-semibold text-[#71351D]/70">
+                          {ord.payment?.paymentMethod || 'CASH'}
+                        </span>
+                      </div>
                     </td>
                     <td className="py-3.5 px-4 text-[#71351D]/70 whitespace-nowrap">
                       {new Date(ord.createdAt).toLocaleDateString('id-ID', {
@@ -278,17 +288,25 @@ export const OrdersPage: React.FC = () => {
                           <Eye className="w-3.5 h-3.5" />
                           Detail
                         </button>
-                        <button
-                          onClick={() => {
-                            setStatusModalOrder(ord);
-                            setTargetStatus(ord.status);
-                            setStatusComment('');
-                          }}
-                          title="Ubah Status"
-                          className="px-2.5 py-1 rounded-lg bg-[#451B0E] hover:bg-[#71351D] text-white text-[11px] font-bold transition"
-                        >
-                          Update
-                        </button>
+                        {ord.status !== 'COMPLETED' && ord.status !== 'CANCELLED' ? (
+                          <button
+                            onClick={() => {
+                              setStatusModalOrder(ord);
+                              setTargetStatus(ord.status === 'PENDING' ? 'CONFIRMED' : ord.status);
+                              setStatusComment('');
+                              setMarkAsPaid(false);
+                              setModalError(null);
+                            }}
+                            title="Ubah Status"
+                            className="px-2.5 py-1 rounded-lg bg-[#451B0E] hover:bg-[#71351D] text-white text-[11px] font-bold transition cursor-pointer"
+                          >
+                            Update
+                          </button>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-500 text-[11px] font-bold">
+                            Final
+                          </span>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -333,7 +351,7 @@ export const OrdersPage: React.FC = () => {
                 <span className="text-xs font-bold text-[#B6370B] font-mono break-all">
                   {selectedOrder.orderNumber}
                 </span>
-                <h3 className="text-lg font-black font-serif text-[#451B0E]">Rincian Transaksi Pesanan</h3>
+                <h3 className="text-lg font-black tracking-tight text-[#451B0E]">Rincian Transaksi Pesanan</h3>
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}
@@ -428,7 +446,7 @@ export const OrdersPage: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-black/60 flex items-start sm:items-center justify-center p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-md w-full p-5 sm:p-8 border border-[#E5D4C6] shadow-2xl space-y-5 my-auto max-h-[calc(100dvh-1.5rem)] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#E5D4C6] pb-3">
-              <h3 className="text-base font-black font-serif text-[#451B0E]">
+              <h3 className="text-base font-black tracking-tight text-[#451B0E]">
                 Update Status Pesanan
               </h3>
               <button onClick={() => setStatusModalOrder(null)} className="text-[#71351D]/60 hover:text-[#451B0E]">
@@ -437,9 +455,23 @@ export const OrdersPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleUpdateStatusSubmit} className="space-y-4 text-xs font-semibold text-[#451B0E]">
+              {modalError && (
+                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{modalError}</span>
+                </div>
+              )}
+
               <div>
                 <p className="text-[11px] text-[#71351D] mb-1">
                   Pesanan: <strong className="font-mono">{statusModalOrder.orderNumber}</strong> ({statusModalOrder.user?.name})
+                </p>
+                <p className="text-[11px] text-[#71351D]/80 mb-2.5">
+                  Pembayaran saat ini:{' '}
+                  <strong className={statusModalOrder.payment?.status === 'PAID' ? 'text-green-700' : 'text-amber-700'}>
+                    {statusModalOrder.payment?.status || 'PENDING'}
+                  </strong>{' '}
+                  ({statusModalOrder.payment?.paymentMethod || 'CASH'})
                 </p>
                 <label className="block mb-1.5">Pilih Status Baru *</label>
                 <select
@@ -456,6 +488,26 @@ export const OrdersPage: React.FC = () => {
                   <option value="CANCELLED">CANCELLED (Pesanan Dibatalkan)</option>
                 </select>
               </div>
+
+              {statusModalOrder.payment?.status !== 'PAID' && targetStatus !== 'CANCELLED' && (
+                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-[#F4EDE5]/70 border border-[#E5D4C6] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={targetStatus === 'COMPLETED' ? true : markAsPaid}
+                    disabled={targetStatus === 'COMPLETED'}
+                    onChange={(e) => setMarkAsPaid(e.target.checked)}
+                    className="mt-0.5 rounded accent-[#B6370B]"
+                  />
+                  <span className="text-[11px] leading-relaxed text-[#451B0E]">
+                    <strong>Tandai pembayaran sudah diterima / LUNAS (PAID)</strong>
+                    {targetStatus === 'COMPLETED' && (
+                      <span className="block text-[#71351D]/80">
+                        Otomatis dicatat LUNAS saat pesanan diselesaikan (COMPLETED).
+                      </span>
+                    )}
+                  </span>
+                </label>
+              )}
 
               <div>
                 <label className="block mb-1.5">Catatan / Keterangan (Opsional)</label>

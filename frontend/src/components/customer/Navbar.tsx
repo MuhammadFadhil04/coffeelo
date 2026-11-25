@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Coffee, ShoppingBag, User, Menu, X, LogOut, ShieldCheck, ShoppingCart } from 'lucide-react';
+import { Coffee, ShoppingBag, User, Menu, X, LogOut, ShieldCheck, ShoppingCart, Package } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -11,7 +11,7 @@ export const Navbar: React.FC = () => {
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const { getTotalCount, setIsCartOpen } = useCartStore();
-  const { user, logout, fetchMe } = useAuthStore();
+  const { user, logout, fetchMe, openAuthModal } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -117,18 +117,30 @@ export const Navbar: React.FC = () => {
             >
               Visit
             </button>
+            <button
+              type="button"
+              onClick={() => (user ? navigate('/my-orders') : openAuthModal('/my-orders'))}
+              className={`inline-flex items-center gap-1.5 transition relative py-1 cursor-pointer ${
+                location.pathname.startsWith('/my-orders') || location.pathname.startsWith('/payment/')
+                  ? 'text-coffee-orange font-bold'
+                  : 'hover:text-coffee-orange'
+              }`}
+            >
+              <Package className="w-4 h-4 text-coffee-orange" />
+              Riwayat Pesanan
+            </button>
           </nav>
 
           {/* Right Action Icons & CTA */}
           <div className="flex items-center gap-3">
             {/* Cart Button */}
             <button
-              onClick={() => setIsCartOpen(true)}
+              onClick={() => (user ? setIsCartOpen(true) : openAuthModal('/cart'))}
               aria-label="Open Cart"
-              className="relative p-2.5 rounded-full hover:bg-coffee-beige/40 text-coffee-dark transition flex items-center justify-center"
+              className="relative p-2.5 rounded-full hover:bg-coffee-beige/40 text-coffee-dark transition flex items-center justify-center cursor-pointer"
             >
               <ShoppingBag className="w-5 h-5" />
-              {getTotalCount() > 0 && (
+              {user && getTotalCount() > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-coffee-orange text-white text-[10px] font-extrabold flex items-center justify-center animate-scaleIn">
                   {getTotalCount()}
                 </span>
@@ -171,6 +183,24 @@ export const Navbar: React.FC = () => {
 
                     <div className="space-y-1 text-xs font-semibold text-coffee-dark">
                       <Link
+                        to="/profile"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 p-2 rounded-xl hover:bg-coffee-cream transition"
+                      >
+                        <User className="w-4 h-4 text-coffee-brown" />
+                        My Profile
+                      </Link>
+
+                      <Link
+                        to="/my-orders"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 p-2 rounded-xl hover:bg-coffee-cream transition"
+                      >
+                        <Package className="w-4 h-4 text-coffee-orange" />
+                        My Orders
+                      </Link>
+
+                      <Link
                         to="/cart"
                         onClick={() => setIsUserMenuOpen(false)}
                         className="flex items-center gap-2 p-2 rounded-xl hover:bg-coffee-cream transition"
@@ -204,10 +234,10 @@ export const Navbar: React.FC = () => {
             ) : (
               <Link
                 to="/login"
-                aria-label="Account Login"
-                className="p-2.5 rounded-full hover:bg-coffee-beige/40 text-coffee-dark transition hidden sm:flex items-center justify-center"
+                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-coffee-beige bg-white/70 hover:bg-white text-coffee-dark font-bold text-xs transition"
               >
-                <User className="w-5 h-5" />
+                <User className="w-3.5 h-3.5 text-coffee-orange" />
+                Sign In
               </Link>
             )}
 
@@ -266,6 +296,21 @@ export const Navbar: React.FC = () => {
             >
               Visit Store
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                if (user) {
+                  navigate('/my-orders');
+                } else {
+                  openAuthModal('/my-orders');
+                }
+              }}
+              className="text-left py-2 hover:text-coffee-orange transition border-b border-coffee-beige/40 flex items-center gap-2 text-coffee-orange font-bold"
+            >
+              <Package className="w-4 h-4" />
+              Riwayat Pesanan
+            </button>
           </div>
 
           <div className="pt-2 flex flex-col gap-3">
@@ -284,13 +329,22 @@ export const Navbar: React.FC = () => {
                 Sign Out ({user.name})
               </button>
             ) : (
-              <Link
-                to="/login"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full py-2.5 rounded-full border border-coffee-dark text-coffee-dark font-semibold text-center text-sm"
-              >
-                Sign In to Account
-              </Link>
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  to="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full py-2.5 rounded-full border border-coffee-dark text-coffee-dark font-semibold text-center text-sm"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full py-2.5 rounded-full bg-coffee-dark text-white font-semibold text-center text-sm"
+                >
+                  Register
+                </Link>
+              </div>
             )}
           </div>
         </div>

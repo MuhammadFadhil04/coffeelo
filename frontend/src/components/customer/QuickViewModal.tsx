@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, ShoppingBag, Check, Plus, Minus, Star } from 'lucide-react';
 import { Product } from '@/types';
 import { useCartStore } from '@/stores/cartStore';
+import { useAuthStore } from '@/stores/authStore';
 
 interface QuickViewModalProps {
   product: Product | null;
@@ -11,6 +12,7 @@ interface QuickViewModalProps {
 
 export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen, onClose }) => {
   const { addItem, setIsCartOpen } = useCartStore();
+  const { user, openAuthModal } = useAuthStore();
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState(1);
   const [instructions, setInstructions] = useState('');
@@ -68,6 +70,11 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
   };
 
   const handleAddToCart = () => {
+    if (!user) {
+      onClose();
+      openAuthModal(`/menu/${product.slug}`);
+      return;
+    }
     addItem(product, selectedVariants, quantity, instructions);
     setIsAdded(true);
     if (timerRef.current) window.clearTimeout(timerRef.current);

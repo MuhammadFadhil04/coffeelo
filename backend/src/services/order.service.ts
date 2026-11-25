@@ -1,6 +1,5 @@
 import prisma from '../config/database.js';
 import { CreateOrderInput } from '../validators/order.validator.js';
-import { midtransService } from './midtrans.service.js';
 import { OrderStatus, PaymentStatus, Prisma, Role } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import { releaseOrderInventory, reserveOrderInventory } from '../utils/order-inventory.util.js';
@@ -15,11 +14,13 @@ const REQUIRES_PAID_STATUSES: ReadonlySet<OrderStatus> = new Set([
   OrderStatus.COMPLETED,
 ]);
 
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  QRIS: 'QRIS',
+  CASH: 'Cash / Bayar di Tempat',
+};
+
 export class OrderService {
   async createOrder(userId: string, input: CreateOrderInput) {
-    // Fail before reserving inventory when payment credentials are missing.
-    midtransService.ensureConfigured();
-
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, name: true, email: true, phone: true },
@@ -27,15 +28,25 @@ export class OrderService {
     if (!user) throw new AppError('User not found.', 404);
 
     // Prices and selected options always come from the database, never the cart payload.
-    const productIds = [...new Set(input.items.map((item) => item.productId))];
+    const rawIds = [...new Set(input.items.map((item) => item.productId))];
+    const rawSlugs = [
+      ...new Set(
+        input.items
+          .map((item) => item.slug)
+          .filter((s): s is string => Boolean(s))
+      ),
+    ];
+
     const dbProducts = await prisma.product.findMany({
-      where: { id: { in: productIds }, deletedAt: null },
+      where: {
+        deletedAt: null,
+        OR: [
+          { id: { in: rawIds } },
+          { slug: { in: [...rawIds, ...rawSlugs] } },
+        ],
+      },
       include: { variants: true },
     });
-
-    if (dbProducts.length !== productIds.length) {
-      throw new AppError('One or more selected products are invalid or no longer available.', 404);
-    }
 
     let calculatedSubtotal = 0;
     const verifiedOrderItems: Array<{
@@ -50,8 +61,15 @@ export class OrderService {
     }> = [];
 
     for (const itemInput of input.items) {
-      const product = dbProducts.find((p) => p.id === itemInput.productId);
-      if (!product) throw new AppError(`Product ${itemInput.productId} not found.`, 404);
+      const product = dbProducts.find(
+        (p) =>
+          p.id === itemInput.productId ||
+          p.slug === itemInput.productId ||
+          (itemInput.slug && p.slug === itemInput.slug)
+      );
+      if (!product) {
+        throw new AppError('Produk yang dipilih tidak ditemukan atau sudah tidak tersedia.', 404);
+      }
 
       if (!product.isAvailable || product.deletedAt || product.stock < itemInput.quantity) {
         throw new AppError(`Insufficient stock for "${product.name}". Available: ${product.stock}`, 409);
@@ -156,6 +174,16 @@ export class OrderService {
       ? (JSON.parse(JSON.stringify(input.shippingAddress)) as Prisma.InputJsonValue)
       : undefined;
 
+    const paymentMethod = input.paymentMethod || 'QRIS';
+    const isCashPayment = paymentMethod === 'CASH';
+    const methodLabel = PAYMENT_METHOD_LABELS[paymentMethod] || paymentMethod;
+
+    const statusComment = isCashPayment
+      ? input.type === 'PICKUP'
+        ? 'Pesanan berhasil dibuat. Menunggu pembayaran tunai di kasir saat pengambilan.'
+        : 'Pesanan berhasil dibuat. Menunggu pembayaran tunai di tempat (COD) saat kurir tiba.'
+      : `Pesanan dibuat dengan metode ${methodLabel}. Menunggu konfirmasi scan barcode QRIS.`;
+
     const newOrder = await prisma.$transaction(async (tx) => {
       await reserveOrderInventory(tx, verifiedOrderItems);
 
@@ -194,11 +222,12 @@ export class OrderService {
           statusHistory: {
             create: {
               status: OrderStatus.PENDING,
-              comment: 'Order placed by customer. Awaiting payment.',
+              comment: statusComment,
             },
           },
           payment: {
             create: {
+              paymentMethod,
               grossAmount: new Prisma.Decimal(finalTotalAmount),
               status: PaymentStatus.PENDING,
             },
@@ -207,59 +236,13 @@ export class OrderService {
         include: {
           items: { include: { options: true } },
           payment: true,
-          statusHistory: true,
+          statusHistory: { orderBy: { createdAt: 'desc' } },
         },
       });
     });
 
-    try {
-      const snapResult = await midtransService.createSnapToken({
-        orderNumber: newOrder.orderNumber,
-        grossAmount: Number(newOrder.totalAmount),
-        customerDetails: {
-          first_name: user.name,
-          email: user.email,
-          phone: user.phone || undefined,
-        },
-        finishRedirectUrl: new URL(
-          `/payment/${newOrder.id}`,
-          process.env.FRONTEND_URL || 'http://localhost:5173'
-        ).toString(),
-      });
-
-      const payment = await prisma.payment.update({
-        where: { orderId: newOrder.id },
-        data: {
-          snapToken: snapResult.snapToken,
-          snapRedirectUrl: snapResult.redirectUrl,
-        },
-      });
-
-      return { ...newOrder, payment };
-    } catch (error) {
-      await prisma.$transaction(async (tx) => {
-        const cancelled = await tx.order.updateMany({
-          where: { id: newOrder.id, status: OrderStatus.PENDING },
-          data: { status: OrderStatus.CANCELLED },
-        });
-        if (cancelled.count !== 1) return;
-
-        await releaseOrderInventory(tx, newOrder.items);
-        await tx.orderStatusHistory.create({
-          data: {
-            orderId: newOrder.id,
-            status: OrderStatus.CANCELLED,
-            comment: 'Payment could not be initialized. Reserved stock was released.',
-          },
-        });
-        await tx.payment.updateMany({
-          where: { orderId: newOrder.id, status: PaymentStatus.PENDING },
-          data: { status: PaymentStatus.FAILED },
-        });
-      });
-
-      throw error;
-    }
+    const { payloadJson: _omitted, ...safePayment } = newOrder.payment!;
+    return { ...newOrder, payment: safePayment };
   }
 
   async getMyOrders(userId: string, page = 1, limit = 10, status?: OrderStatus) {
@@ -385,41 +368,70 @@ export class OrderService {
     };
   }
 
-  async updateOrderStatus(orderId: string, newStatus: OrderStatus, comment?: string) {
+  async updateOrderStatus(
+    orderId: string,
+    newStatus: OrderStatus,
+    comment?: string,
+    markAsPaid?: boolean
+  ) {
     return prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({
         where: { id: orderId },
         include: { items: { include: { options: true } }, payment: true },
       });
-      if (!order) throw new AppError('Order not found.', 404);
-      if (order.status === newStatus) return order;
+      if (!order) throw new AppError('Pesanan tidak ditemukan.', 404);
+      if (order.status === newStatus && !markAsPaid) return order;
 
       // Prevent resurrecting or double-releasing stock from terminal states
       if (order.status === OrderStatus.CANCELLED) {
-        throw new AppError('Cancelled orders are final and cannot be modified.', 409);
+        throw new AppError('Pesanan yang sudah dibatalkan bersifat final dan tidak dapat diubah.', 409);
       }
       if (order.status === OrderStatus.COMPLETED) {
-        throw new AppError('Completed orders are final and cannot be modified.', 409);
+        throw new AppError('Pesanan yang sudah selesai bersifat final dan tidak dapat diubah.', 409);
       }
 
-      // Enforce separation of payment verification before fulfilling orders
-      if (REQUIRES_PAID_STATUSES.has(newStatus) && order.payment?.status !== PaymentStatus.PAID) {
+      if (
+        REQUIRES_PAID_STATUSES.has(newStatus) &&
+        (order.payment?.status === PaymentStatus.FAILED ||
+          order.payment?.status === PaymentStatus.EXPIRED) &&
+        !markAsPaid
+      ) {
         throw new AppError(
-          `Cannot advance order to ${newStatus} before payment is verified as PAID.`,
+          'Pembayaran pesanan ini berstatus gagal/kedaluwarsa. Centang opsi verifikasi lunas jika pelanggan membayar secara langsung.',
           409
         );
       }
 
-      const changed = await tx.order.updateMany({
-        where: {
-          id: orderId,
-          status: order.status,
-          NOT: { status: { in: [OrderStatus.CANCELLED, OrderStatus.COMPLETED] } },
-        },
-        data: { status: newStatus },
-      });
-      if (changed.count !== 1) {
-        throw new AppError('Order status changed while being updated. Refresh and try again.', 409);
+      if (order.status !== newStatus) {
+        const changed = await tx.order.updateMany({
+          where: {
+            id: orderId,
+            status: order.status,
+            NOT: { status: { in: [OrderStatus.CANCELLED, OrderStatus.COMPLETED] } },
+          },
+          data: { status: newStatus },
+        });
+        if (changed.count !== 1) {
+          throw new AppError('Status pesanan berubah saat diproses. Muat ulang halaman lalu coba lagi.', 409);
+        }
+      }
+
+      const shouldSettlePayment =
+        newStatus !== OrderStatus.CANCELLED &&
+        (newStatus === OrderStatus.COMPLETED || Boolean(markAsPaid)) &&
+        order.payment &&
+        order.payment.status !== PaymentStatus.PAID &&
+        order.payment.status !== PaymentStatus.REFUNDED;
+
+      if (shouldSettlePayment) {
+        await tx.payment.updateMany({
+          where: { orderId, status: order.payment!.status },
+          data: {
+            status: PaymentStatus.PAID,
+            paidAt: new Date(),
+            paymentMethod: order.payment!.paymentMethod || 'CASH',
+          },
+        });
       }
 
       if (newStatus === OrderStatus.CANCELLED) {
@@ -436,7 +448,11 @@ export class OrderService {
         data: {
           orderId,
           status: newStatus,
-          comment: comment || `Order status updated to ${newStatus}`,
+          comment:
+            comment ||
+            (shouldSettlePayment
+              ? `Status pesanan diperbarui ke ${newStatus} dan pembayaran diverifikasi LUNAS oleh Admin.`
+              : `Status pesanan diperbarui ke ${newStatus} oleh Admin.`),
         },
       });
 

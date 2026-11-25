@@ -59,20 +59,27 @@ const NAV_GROUPS: NavGroup[] = [
 export const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, token, logout, fetchMe, isAdmin, isLoading } = useAuthStore();
+  const { adminUser, adminToken, logoutAdmin, fetchAdminMe, isAdminVerifying, isLoading } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (token && !user) {
-      fetchMe();
-    }
-  }, [token, user, fetchMe]);
+    fetchAdminMe();
+    const handleSync = () => {
+      fetchAdminMe();
+    };
+    window.addEventListener('focus', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('focus', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, [fetchAdminMe]);
 
   useEffect(() => {
-    if (!token && !isLoading) {
+    if (!adminToken && !adminUser && !isAdminVerifying && !isLoading) {
       navigate('/login?redirect=' + encodeURIComponent(location.pathname));
     }
-  }, [token, isLoading, navigate, location.pathname]);
+  }, [adminToken, adminUser, isAdminVerifying, isLoading, navigate, location.pathname]);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -93,46 +100,46 @@ export const AdminLayout: React.FC = () => {
   }, [isMobileMenuOpen]);
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    logoutAdmin();
+    navigate('/login?redirect=' + encodeURIComponent(location.pathname));
   };
 
-  if (token && !user) {
+  if ((adminToken || isAdminVerifying) && !adminUser) {
     return (
-      <div className="min-h-screen bg-[#F4EDE5] flex flex-col items-center justify-center gap-3 p-6">
+      <div className="min-h-screen bg-[#F4EDE5] font-sans flex flex-col items-center justify-center gap-3 p-6">
         <Loader2 className="w-8 h-8 text-[#B6370B] animate-spin" />
         <p className="text-xs font-bold text-[#71351D]">Memverifikasi sesi Administrator...</p>
       </div>
     );
   }
 
-  // If user is logged in but not an admin, show Access Denied
-  if (user && !isAdmin()) {
+  // If active token belongs to a Customer instead of an Admin, prompt clean Admin login
+  if (adminUser && adminUser.role !== 'ADMIN') {
     return (
-      <div className="min-h-screen bg-[#F4EDE5] flex items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-[#F4EDE5] font-sans flex items-center justify-center p-6 text-center">
         <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-[#E5D4C6] shadow-xl space-y-5">
-          <div className="w-16 h-16 mx-auto rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto rounded-full bg-amber-100 text-[#B6370B] flex items-center justify-center">
             <ShieldAlert className="w-8 h-8" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-black text-[#451B0E]">Akses Ditolak (403)</h2>
-            <p className="text-sm text-[#71351D]/80">
-              Akun Anda (<strong>{user.email}</strong>) terdaftar sebagai Pelanggan dan tidak memiliki hak akses Administrator.
+            <h2 className="text-2xl font-black tracking-tight text-[#451B0E]">Sesi Administrator Diperlukan</h2>
+            <p className="text-sm text-[#71351D]/85 leading-relaxed">
+              Browser saat ini aktif menggunakan akun Pelanggan (<strong>{adminUser.email}</strong>). Silakan masuk kembali menggunakan akun Administrator untuk mengakses panel ini.
             </p>
           </div>
-          <div className="pt-2 flex flex-col gap-2">
+          <div className="pt-2 flex flex-col gap-2.5">
+            <Link
+              to={`/login?redirect=${encodeURIComponent(location.pathname)}`}
+              className="w-full py-3.5 rounded-full bg-[#B6370B] hover:bg-[#451B0E] text-white text-xs font-extrabold uppercase tracking-wider transition shadow"
+            >
+              Masuk Sebagai Admin
+            </Link>
             <Link
               to="/"
-              className="w-full py-3 rounded-full bg-[#451B0E] text-white text-xs font-bold hover:bg-[#71351D] transition shadow"
+              className="w-full py-3 rounded-full bg-[#F4EDE5] text-[#451B0E] text-xs font-bold hover:bg-[#E5D4C6] transition"
             >
-              Kembali ke Toko
+              Kembali ke Toko Pelanggan
             </Link>
-            <button
-              onClick={handleLogout}
-              className="w-full py-3 rounded-full bg-gray-100 text-gray-700 text-xs font-bold hover:bg-gray-200 transition"
-            >
-              Logout & Masuk Sebagai Admin
-            </button>
           </div>
         </div>
       </div>
@@ -149,7 +156,7 @@ export const AdminLayout: React.FC = () => {
   const pageTitle = currentNav?.name || 'Admin Panel';
 
   return (
-    <div className="min-h-screen w-full overflow-x-clip bg-[#F4EDE5] flex flex-col lg:flex-row text-[#451B0E]">
+    <div className="min-h-screen w-full overflow-x-clip bg-[#F4EDE5] font-sans flex flex-col lg:flex-row text-[#451B0E]">
       {/* 1. Desktop & Mobile/Tablet Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-[#3A1409] text-[#E5D4C6] flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 border-r border-[#451B0E] shadow-2xl shadow-black/20 ${
@@ -163,8 +170,8 @@ export const AdminLayout: React.FC = () => {
               <Coffee className="w-5 h-5 text-white" />
             </div>
             <div>
-              <span className="block font-serif font-black text-xl text-white tracking-wider leading-none">
-                COFFEELO
+              <span className="block font-extrabold text-xl text-white tracking-tight leading-none">
+                Coffeelo
               </span>
               <span className="inline-block mt-1 text-[9px] tracking-widest text-[#B6370B] uppercase font-bold bg-[#B6370B]/15 px-2 py-0.5 rounded-full border border-[#B6370B]/30">
                 Admin Portal
@@ -249,20 +256,20 @@ export const AdminLayout: React.FC = () => {
               <div className="relative shrink-0">
                 <img
                   src={
-                    user?.avatarUrl ||
+                    adminUser?.avatarUrl ||
                     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop'
                   }
-                  alt={user?.name || 'Admin'}
+                  alt={adminUser?.name || 'Admin'}
                   className="w-9 h-9 rounded-full object-cover ring-2 ring-[#B6370B]"
                 />
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-[#3A1409]"></span>
               </div>
               <div className="truncate">
                 <p className="text-xs font-bold text-white truncate leading-tight">
-                  {user?.name || 'Administrator'}
+                  {adminUser?.name || 'Administrator'}
                 </p>
                 <p className="text-[10px] text-[#E5D4C6]/60 truncate leading-tight mt-0.5">
-                  {user?.email || 'admin@coffeelo.com'}
+                  {adminUser?.email || 'admin@coffeelo.com'}
                 </p>
               </div>
             </div>
@@ -299,7 +306,7 @@ export const AdminLayout: React.FC = () => {
               <Menu className="w-5 h-5" />
             </button>
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-2xl font-black font-serif text-[#451B0E] tracking-tight truncate">
+              <h1 className="text-lg sm:text-2xl font-black text-[#451B0E] tracking-tight truncate">
                 {pageTitle}
               </h1>
               <p className="text-xs text-[#71351D]/70 hidden sm:block truncate">
@@ -309,13 +316,9 @@ export const AdminLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
-              <span className="w-2 h-2 rounded-full bg-green-600 animate-pulse"></span>
-              Live Store Active
-            </span>
             <Link
               to="/"
-              className="px-3.5 py-1.5 rounded-xl bg-[#451B0E] hover:bg-[#71351D] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+              className="px-3.5 py-2 rounded-xl bg-[#451B0E] hover:bg-[#71351D] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Storefront</span>
