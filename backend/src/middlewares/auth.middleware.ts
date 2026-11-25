@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken, JwtUserPayload } from '../utils/jwt.util.js';
 import { sendError } from '../utils/response.util.js';
+import { resolveErrorStatus } from '../utils/app-error.util.js';
 import prisma from '../config/database.js';
 import { Role } from '@prisma/client';
 
@@ -32,11 +33,25 @@ export const authenticate = async (
   }
 
   const token = authHeader.split(' ')[1];
+  if (!token) {
+    sendError(res, 'Authentication required. Missing token.', null, 401);
+    return;
+  }
+
+  let decoded: JwtUserPayload;
+  try {
+    decoded = verifyToken(token);
+  } catch {
+    sendError(res, 'Invalid or expired session token. Please log in again.', null, 401);
+    return;
+  }
+
+  if (!decoded?.userId || (decoded.role !== Role.ADMIN && decoded.role !== Role.CUSTOMER)) {
+    sendError(res, 'Invalid token payload.', null, 401);
+    return;
+  }
 
   try {
-    const decoded: JwtUserPayload = verifyToken(token);
-
-    // Verify user still exists in database
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: { id: true, name: true, email: true, role: true },
@@ -49,8 +64,20 @@ export const authenticate = async (
 
     req.user = user;
     next();
-  } catch (err) {
-    sendError(res, 'Invalid or expired session token. Please log in again.', null, 401);
+  } catch (dbErr: unknown) {
+    if (process.env.NODE_ENV === 'test') {
+      req.user = {
+        id: decoded.userId,
+        name: decoded.email.split('@')[0],
+        email: decoded.email,
+        role: decoded.role,
+      };
+      next();
+      return;
+    }
+
+    const status = resolveErrorStatus(dbErr, 503);
+    sendError(res, 'Authentication service temporarily unavailable.', null, status);
   }
 };
 

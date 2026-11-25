@@ -10,10 +10,10 @@ export const CustomerLayout: React.FC = () => {
   useLenis();
 
   return (
-    <div className="min-h-screen bg-coffee-cream text-coffee-dark flex flex-col justify-between selection:bg-coffee-orange selection:text-white">
+    <div className="min-h-screen w-full overflow-x-clip bg-coffee-cream text-coffee-dark flex flex-col justify-between selection:bg-coffee-orange selection:text-white">
       <Navbar />
       <CartDrawer />
-      <main className="flex-1">
+      <main className="flex-1 w-full min-w-0">
         <Outlet />
       </main>
       <Footer />

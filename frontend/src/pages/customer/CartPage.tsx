@@ -122,7 +122,7 @@ export const CartPage: React.FC = () => {
                 Fulfillment Preference:
               </span>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setOrderType('PICKUP')}
@@ -175,7 +175,7 @@ export const CartPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="p-4 rounded-2xl bg-coffee-cream/40 border border-coffee-beige/80 text-xs space-y-3">
-                  <div className="flex items-center justify-between text-coffee-dark font-semibold">
+                  <div className="flex flex-wrap items-center justify-between gap-1 text-coffee-dark font-semibold">
                     <span>Delivery Address</span>
                     <span className="text-[11px] text-coffee-orange font-bold">
                       {subtotal >= 25 ? 'FREE Delivery Eligible' : 'Standard Fee: $2.50'}
@@ -200,9 +200,9 @@ export const CartPage: React.FC = () => {
             </div>
 
             {/* Cart Items List */}
-            <div className="bg-white rounded-3xl p-6 border border-coffee-beige shadow-subtle divide-y divide-coffee-beige/60">
+            <div className="bg-white rounded-3xl p-4 sm:p-6 border border-coffee-beige shadow-subtle divide-y divide-coffee-beige/60">
               {items.map((item) => (
-                <div key={item.id} className="py-5 first:pt-0 last:pb-0 flex gap-4 sm:gap-6 items-start">
+                <div key={item.id} className="py-5 first:pt-0 last:pb-0 flex gap-3 sm:gap-6 items-start">
                   {/* Thumbnail */}
                   <img
                     src={item.product.imageUrl}
@@ -304,7 +304,7 @@ export const CartPage: React.FC = () => {
                   Promo / Voucher Code:
                 </label>
                 <div className="flex gap-2">
-                  <div className="relative flex-1">
+                  <div className="relative flex-1 min-w-0">
                     <Tag className="w-3.5 h-3.5 text-coffee-brown absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="text"

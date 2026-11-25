@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { productService } from '../services/product.service.js';
 import { sendSuccess, sendError } from '../utils/response.util.js';
+import { resolveErrorStatus } from '../utils/app-error.util.js';
 
 export class ProductController {
   async getAll(req: Request, res: Response) {
@@ -10,8 +11,8 @@ export class ProductController {
       const result = await productService.getAll({
         categoryId: categoryId as string,
         search: search as string,
-        isFeatured: isFeatured !== undefined ? isFeatured === 'true' : undefined,
-        isAvailable: isAvailable !== undefined ? isAvailable === 'true' : undefined,
+        isFeatured: isFeatured !== undefined ? String(isFeatured) === 'true' : undefined,
+        isAvailable: isAvailable !== undefined ? String(isAvailable) === 'true' : undefined,
         page: page ? Number(page) : undefined,
         limit: limit ? Number(limit) : undefined,
         sortBy: sortBy as any,
@@ -19,7 +20,7 @@ export class ProductController {
 
       return sendSuccess(res, result, 'Products retrieved successfully.');
     } catch (error: any) {
-      return sendError(res, error.message || 'Failed to fetch products.', null, 500);
+      return sendError(res, error.message || 'Failed to fetch products.', null, resolveErrorStatus(error, 500));
     }
   }
 
@@ -29,7 +30,7 @@ export class ProductController {
       const product = await productService.getByIdOrSlug(id);
       return sendSuccess(res, product, 'Product detail retrieved successfully.');
     } catch (error: any) {
-      return sendError(res, error.message || 'Product not found.', null, 404);
+      return sendError(res, error.message || 'Product not found.', null, resolveErrorStatus(error, 500));
     }
   }
 
@@ -38,7 +39,7 @@ export class ProductController {
       const product = await productService.create(req.body);
       return sendSuccess(res, product, 'Product created successfully.', 201);
     } catch (error: any) {
-      return sendError(res, error.message || 'Failed to create product.', null, 400);
+      return sendError(res, error.message || 'Failed to create product.', null, resolveErrorStatus(error, 500));
     }
   }
 
@@ -48,7 +49,7 @@ export class ProductController {
       const product = await productService.update(id, req.body);
       return sendSuccess(res, product, 'Product updated successfully.');
     } catch (error: any) {
-      return sendError(res, error.message || 'Failed to update product.', null, 400);
+      return sendError(res, error.message || 'Failed to update product.', null, resolveErrorStatus(error, 500));
     }
   }
 
@@ -58,7 +59,7 @@ export class ProductController {
       await productService.softDelete(id);
       return sendSuccess(res, null, 'Product deactivated successfully.');
     } catch (error: any) {
-      return sendError(res, error.message || 'Failed to deactivate product.', null, 400);
+      return sendError(res, error.message || 'Failed to deactivate product.', null, resolveErrorStatus(error, 500));
     }
   }
 }

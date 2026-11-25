@@ -1,4 +1,9 @@
+import 'dotenv/config';
+import { validateEnvironment } from './config/env.js';
 import app from './app.js';
+
+// Validate environment on startup
+validateEnvironment();
 
 const PORT = process.env.PORT || 5000;
 

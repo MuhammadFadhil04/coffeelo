@@ -104,7 +104,7 @@ export const ProductShowcaseBanner: React.FC = () => {
           </div>
 
           {/* Tab Selector Buttons */}
-          <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+          <div className="flex gap-2 overflow-x-auto py-2 no-scrollbar">
             {SHOWCASE_ITEMS.map((item, idx) => (
               <button
                 key={item.id}
@@ -131,7 +131,7 @@ export const ProductShowcaseBanner: React.FC = () => {
               alt={current.name}
               className="w-full h-full object-cover rounded-2xl shadow-subtle hover:scale-105 transition-transform duration-700"
             />
-            <div className="absolute top-8 left-8 bg-coffee-dark/85 backdrop-blur-md px-3.5 py-1.5 rounded-full text-white text-xs font-bold flex items-center gap-1.5">
+            <div className="absolute top-5 left-5 sm:top-8 sm:left-8 bg-coffee-dark/85 backdrop-blur-md px-3.5 py-1.5 rounded-full text-white text-xs font-bold flex items-center gap-1.5">
               <Award className="w-3.5 h-3.5 text-coffee-orange" />
               Barista Favorite
             </div>
@@ -172,7 +172,7 @@ export const ProductShowcaseBanner: React.FC = () => {
             </div>
 
             {/* Sensory Matrix */}
-            <div className="grid grid-cols-3 gap-3 pt-2 border-t border-coffee-beige/60">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-coffee-beige/60">
               <div className="p-3 rounded-2xl bg-coffee-cream/40 border border-coffee-beige/60">
                 <div className="flex items-center gap-1.5 text-coffee-brown text-[11px] font-semibold mb-1">
                   <Coffee className="w-3.5 h-3.5 text-coffee-orange" />
@@ -199,7 +199,7 @@ export const ProductShowcaseBanner: React.FC = () => {
             </div>
 
             {/* Price & Add to Order CTA */}
-            <div className="flex items-center justify-between pt-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4">
               <div>
                 <p className="text-[11px] uppercase font-bold text-coffee-brown">Price</p>
                 <p className="text-2xl font-black text-coffee-dark">
@@ -209,7 +209,7 @@ export const ProductShowcaseBanner: React.FC = () => {
 
               <button
                 onClick={handleQuickAdd}
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-coffee-orange hover:bg-coffee-orange/90 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-card hover:shadow-elevation active:scale-95"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-coffee-orange hover:bg-coffee-orange/90 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-card hover:shadow-elevation active:scale-95"
               >
                 Order This Recipe
                 <ArrowRight className="w-4 h-4" />

@@ -29,7 +29,7 @@ export const MenuPage: React.FC = () => {
         sortBy,
       })
       .then(setProducts);
-  }, [selectedCategory, searchQuery, selectedRoast, selectedTemp, selectedRoast, selectedTemp, sortBy]);
+  }, [selectedCategory, searchQuery, selectedRoast, selectedTemp, sortBy]);
 
   const resetFilters = () => {
     setSelectedCategory('all');
@@ -49,7 +49,7 @@ export const MenuPage: React.FC = () => {
   return (
     <div className="pt-24 pb-20 bg-coffee-cream min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Breadcrumb & Header Banner */}
         <div className="mb-10 space-y-3">
           <nav className="flex items-center gap-2 text-xs text-coffee-brown">
@@ -68,15 +68,12 @@ export const MenuPage: React.FC = () => {
                 Specialty Coffee Menu
               </h1>
             </div>
-            <p className="text-xs sm:text-sm text-coffee-brown max-w-md font-medium">
-              Eksplorasi kopi single-origin, espresso kreasi barista, manual brew V60, dan minuman non-kopi artisan.
-            </p>
           </div>
         </div>
 
         {/* Filter & Controls Toolbar */}
         <div className="bg-white rounded-3xl p-4 sm:p-6 border border-coffee-beige shadow-subtle mb-8 space-y-4">
-          
+
           {/* Search and Sort Row */}
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
             {/* Search Input */}
@@ -122,11 +119,10 @@ export const MenuPage: React.FC = () => {
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-                  selectedCategory === cat.id
+                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${selectedCategory === cat.id
                     ? 'bg-coffee-dark text-white shadow-sm'
                     : 'bg-coffee-cream/60 hover:bg-coffee-beige/60 text-coffee-dark border border-coffee-beige/60'
-                }`}
+                  }`}
               >
                 {cat.name}
               </button>
@@ -137,17 +133,16 @@ export const MenuPage: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs font-medium border-t border-coffee-beige/40">
             <div className="flex flex-wrap items-center gap-4">
               {/* Roast Filter */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <span className="font-bold text-coffee-dark">Roast:</span>
                 {['all', 'Light', 'Medium', 'Medium-Dark', 'Dark'].map((r) => (
                   <button
                     key={r}
                     onClick={() => setSelectedRoast(r)}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition ${
-                      selectedRoast === r
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition ${selectedRoast === r
                         ? 'bg-coffee-orange text-white'
                         : 'text-coffee-dark hover:bg-coffee-cream'
-                    }`}
+                      }`}
                   >
                     {r === 'all' ? 'All' : r}
                   </button>
@@ -155,17 +150,16 @@ export const MenuPage: React.FC = () => {
               </div>
 
               {/* Temperature Filter */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <span className="font-bold text-coffee-dark">Temp:</span>
                 {['all', 'Hot', 'Iced'].map((t) => (
                   <button
                     key={t}
                     onClick={() => setSelectedTemp(t)}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition ${
-                      selectedTemp === t
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition ${selectedTemp === t
                         ? 'bg-coffee-orange text-white'
                         : 'text-coffee-dark hover:bg-coffee-cream'
-                    }`}
+                      }`}
                   >
                     {t === 'all' ? 'All' : t}
                   </button>

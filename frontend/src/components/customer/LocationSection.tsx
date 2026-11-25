@@ -30,7 +30,7 @@ export const LocationSection: React.FC = () => {
 
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-coffee-dark shrink-0" />
-                <span>+62 812-3456-7890 / +351 210 000 000</span>
+                <span className="break-words min-w-0">+62 812-3456-7890 / +351 210 000 000</span>
               </div>
 
               <div className="flex items-center gap-3">
@@ -106,7 +106,7 @@ export const LocationSection: React.FC = () => {
               {/* Pinpoint Location Marker */}
               <div className="absolute top-[48%] left-[51%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-coffee-dark text-white flex items-center justify-center shadow-2xl border-2 border-white animate-bounce">
+                  <div className="w-10 h-10 rounded-full bg-coffee-dark text-white flex items-center justify-center shadow-2xl border-2 border-white animate-bounce motion-reduce:animate-none">
                     <MapPin className="w-5 h-5 fill-white text-coffee-dark" />
                   </div>
                   <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-1.5 bg-black/40 rounded-full blur-[2px]" />

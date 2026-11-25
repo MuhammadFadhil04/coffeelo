@@ -3,6 +3,7 @@ import { hashPassword, comparePassword } from '../utils/password.util.js';
 import { signToken } from '../utils/jwt.util.js';
 import { RegisterInput, LoginInput } from '../validators/auth.validator.js';
 import { Role } from '@prisma/client';
+import { AppError } from '../utils/app-error.util.js';
 
 export class AuthService {
   async register(data: RegisterInput) {
@@ -11,7 +12,7 @@ export class AuthService {
     });
 
     if (existing) {
-      throw new Error('An account with this email address already exists.');
+      throw new AppError('An account with this email address already exists.', 409);
     }
 
     const hashedPassword = await hashPassword(data.password);
@@ -51,12 +52,12 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error('Invalid email or password.');
+      throw new AppError('Invalid email or password.', 401);
     }
 
     const isMatch = await comparePassword(data.password, user.password);
     if (!isMatch) {
-      throw new Error('Invalid email or password.');
+      throw new AppError('Invalid email or password.', 401);
     }
 
     const token = signToken({
@@ -99,7 +100,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error('User not found.');
+      throw new AppError('User not found.', 404);
     }
 
     return user;

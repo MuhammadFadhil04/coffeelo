@@ -16,10 +16,10 @@ export const CartDrawer: React.FC = () => {
         onClick={() => setIsCartOpen(false)}
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
         <div className="w-screen max-w-md bg-coffee-cream border-l border-coffee-beige flex flex-col shadow-2xl">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-coffee-beige bg-white/60">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-5 border-b border-coffee-beige bg-white/60">
             <div className="flex items-center gap-2.5">
               <ShoppingBag className="w-5 h-5 text-coffee-orange" />
               <h2 className="text-lg font-bold text-coffee-dark">Your Basket</h2>
@@ -36,7 +36,7 @@ export const CartDrawer: React.FC = () => {
           </div>
 
           {/* Cart Item List */}
-          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
             {items.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center space-y-4 py-16">
                 <div className="w-16 h-16 rounded-full bg-coffee-beige/60 flex items-center justify-center text-coffee-brown">
@@ -64,7 +64,7 @@ export const CartDrawer: React.FC = () => {
                   <img
                     src={item.product.imageUrl}
                     alt={item.product.name}
-                    className="w-18 h-18 object-contain rounded-xl bg-coffee-cream/40 p-1"
+                    className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 object-cover rounded-xl bg-coffee-cream/40 p-1"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">

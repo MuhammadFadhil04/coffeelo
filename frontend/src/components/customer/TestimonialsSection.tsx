@@ -111,7 +111,7 @@ export const TestimonialsSection: React.FC = () => {
             />
             
             {/* Subtle floating quote banner */}
-            <div className="absolute bottom-8 left-8 right-8 bg-coffee-dark/85 backdrop-blur-md p-5 rounded-2xl border border-white/20 text-white space-y-1">
+            <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8 bg-coffee-dark/85 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-white/20 text-white space-y-1">
               <p className="text-xs font-bold uppercase tracking-wider text-coffee-beige">
                 Your perfect escape
               </p>

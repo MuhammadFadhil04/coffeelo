@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Star,
@@ -27,6 +27,13 @@ export const ProductDetailPage: React.FC = () => {
   const [instructions, setInstructions] = useState('');
   const [isAdded, setIsAdded] = useState(false);
   const [loading, setLoading] = useState(true);
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!slug) return;
@@ -111,7 +118,8 @@ export const ProductDetailPage: React.FC = () => {
   const handleAddToCart = () => {
     addItem(product, selectedVariants, quantity, instructions);
     setIsAdded(true);
-    setTimeout(() => {
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => {
       setIsAdded(false);
       setIsCartOpen(true);
     }, 600);
@@ -130,12 +138,12 @@ export const ProductDetailPage: React.FC = () => {
             <ArrowLeft className="w-3.5 h-3.5" />
             Back to previous
           </button>
-          <nav className="flex items-center gap-2 text-xs text-coffee-brown">
+          <nav className="flex flex-wrap items-center gap-2 text-xs text-coffee-brown">
             <Link to="/" className="hover:text-coffee-orange transition">Home</Link>
             <span>/</span>
             <Link to="/menu" className="hover:text-coffee-orange transition">Menu</Link>
             <span>/</span>
-            <span className="font-bold text-coffee-dark">{product.name}</span>
+            <span className="font-bold text-coffee-dark truncate max-w-[200px] sm:max-w-none">{product.name}</span>
           </nav>
         </div>
 
@@ -205,7 +213,7 @@ export const ProductDetailPage: React.FC = () => {
             
             {/* Header info */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-coffee-beige text-coffee-dark">
                   Specialty Lineup
                 </span>
@@ -313,9 +321,9 @@ export const ProductDetailPage: React.FC = () => {
             </div>
 
             {/* Quantity Adjuster & Add to Basket Button */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 border-t border-coffee-beige/60">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4 border-t border-coffee-beige/60">
               {/* Quantity */}
-              <div className="flex items-center gap-3 border border-coffee-beige rounded-full px-4 py-3 bg-coffee-cream/40">
+              <div className="flex items-center justify-between sm:justify-center gap-3 border border-coffee-beige rounded-full px-4 py-3 bg-coffee-cream/40">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   className="p-1 hover:text-coffee-orange transition text-coffee-dark"

@@ -1,4 +1,5 @@
 import { Product, Category } from '@/types';
+import api from './api';
 
 export const CATEGORIES: Category[] = [
   { id: 'all', name: 'All Menu', slug: 'all', description: 'Curated specialty coffees and handcrafted beverages.' },
@@ -276,8 +277,56 @@ export const PRODUCTS: Product[] = [
   },
 ];
 
+const formatApiProduct = (p: any): Product => ({
+  id: p.id,
+  categoryId: p.categoryId,
+  name: p.name,
+  slug: p.slug,
+  description: p.description,
+  basePrice: Number(p.basePrice),
+  imageUrl: p.imageUrl,
+  images: p.images || [p.imageUrl],
+  stock: p.stock ?? 0,
+  isAvailable: p.isAvailable ?? true,
+  isFeatured: p.isFeatured ?? false,
+  category: p.category,
+  variants: (p.variants || []).map((v: any) => ({
+    id: v.id,
+    productId: v.productId,
+    name: v.name,
+    optionValue: v.optionValue,
+    priceAdjustment: Number(v.priceAdjustment),
+    stock: v.stock ?? 50,
+  })),
+  tastingNotes: p.tastingNotes || ['Specialty Bean', 'Crafted Roast'],
+  roastLevel: p.roastLevel || 'Medium',
+  temperature: p.temperature || 'Both',
+  origin: p.origin || 'Single Origin',
+  rating: p.rating || 4.8,
+  reviewsCount: p.reviews?.length || p.reviewsCount || 12,
+  createdAt: p.createdAt ? String(p.createdAt) : new Date().toISOString(),
+});
+
 export const productService = {
   getCategories: async (): Promise<Category[]> => {
+    try {
+      const res = await api.get('/categories');
+      const apiCategories = res.data.data;
+      if (Array.isArray(apiCategories) && apiCategories.length > 0) {
+        return [
+          { id: 'all', name: 'All Menu', slug: 'all', description: 'Curated specialty coffees and handcrafted beverages.' },
+          ...apiCategories.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            description: c.description || undefined,
+            imageUrl: c.imageUrl || undefined,
+          })),
+        ];
+      }
+    } catch (err) {
+      console.warn('API getCategories error, using local fallback:', err);
+    }
     return CATEGORIES;
   },
 
@@ -288,10 +337,49 @@ export const productService = {
     temperature?: string;
     sortBy?: string;
   }): Promise<Product[]> => {
+    try {
+      let sortByParam = undefined;
+      if (filters?.sortBy === 'price-asc') sortByParam = 'price_asc';
+      else if (filters?.sortBy === 'price-desc') sortByParam = 'price_desc';
+      else if (filters?.sortBy === 'name-asc') sortByParam = 'name';
+
+      const res = await api.get('/products', {
+        params: {
+          categoryId: filters?.categoryId && filters.categoryId !== 'all' ? filters.categoryId : undefined,
+          search: filters?.searchQuery?.trim() || undefined,
+          sortBy: sortByParam,
+          limit: 100,
+        },
+      });
+
+      const apiData = res.data.data?.products || res.data.data;
+      if (Array.isArray(apiData) && apiData.length > 0) {
+        let list: Product[] = apiData.map(formatApiProduct);
+
+        if (filters?.roastLevel && filters.roastLevel !== 'all') {
+          list = list.filter((p) => p.roastLevel === filters.roastLevel);
+        }
+
+        if (filters?.temperature && filters.temperature !== 'all') {
+          list = list.filter((p) => p.temperature === filters.temperature || p.temperature === 'Both');
+        }
+
+        return list;
+      }
+    } catch (err) {
+      console.warn('API getProducts error, using local fallback:', err);
+    }
+
+    // Fallback if API offline or empty
     let result = [...PRODUCTS];
 
     if (filters?.categoryId && filters.categoryId !== 'all') {
-      result = result.filter((p) => p.categoryId === filters.categoryId);
+      result = result.filter(
+        (p) =>
+          p.categoryId === filters.categoryId ||
+          p.category?.id === filters.categoryId ||
+          p.category?.slug === filters.categoryId
+      );
     }
 
     if (filters?.searchQuery) {
@@ -339,10 +427,30 @@ export const productService = {
   },
 
   getProductBySlug: async (slug: string): Promise<Product | undefined> => {
-    return PRODUCTS.find((p) => p.slug === slug);
+    try {
+      const res = await api.get(`/products/${slug}`);
+      if (res.data.data) {
+        return formatApiProduct(res.data.data);
+      }
+    } catch (err) {
+      console.warn(`Product ${slug} API lookup error:`, err);
+    }
+    return PRODUCTS.find((p) => p.slug === slug || p.id === slug);
   },
 
   getRelatedProducts: async (currentProductId: string, categoryId: string): Promise<Product[]> => {
-    return PRODUCTS.filter((p) => p.id !== currentProductId && p.categoryId === categoryId).slice(0, 3);
+    try {
+      const res = await api.get('/products', {
+        params: { categoryId: categoryId !== 'all' ? categoryId : undefined, limit: 5 },
+      });
+      const apiData = res.data.data?.products || res.data.data;
+      if (Array.isArray(apiData) && apiData.length > 0) {
+        return apiData
+          .filter((p: any) => p.id !== currentProductId && p.slug !== currentProductId)
+          .slice(0, 3)
+          .map(formatApiProduct);
+      }
+    } catch {}
+    return PRODUCTS.filter((p) => p.id !== currentProductId && (p.categoryId === categoryId || p.category?.id === categoryId)).slice(0, 3);
   },
 };

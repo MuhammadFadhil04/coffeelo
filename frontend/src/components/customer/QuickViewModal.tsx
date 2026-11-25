@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, ShoppingBag, Check, Plus, Minus, Star } from 'lucide-react';
 import { Product } from '@/types';
 import { useCartStore } from '@/stores/cartStore';
@@ -15,6 +15,13 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
   const [quantity, setQuantity] = useState(1);
   const [instructions, setInstructions] = useState('');
   const [isAdded, setIsAdded] = useState(false);
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+    };
+  }, []);
 
   // Group variants by name (e.g. "Size", "Milk Option")
   const variantGroups = React.useMemo(() => {
@@ -63,7 +70,8 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
   const handleAddToCart = () => {
     addItem(product, selectedVariants, quantity, instructions);
     setIsAdded(true);
-    setTimeout(() => {
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => {
       setIsAdded(false);
       onClose();
       setIsCartOpen(true);
@@ -79,12 +87,13 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
       />
 
       <div className="min-h-full flex items-center justify-center p-4">
-        <div className="relative bg-white w-full max-w-2xl rounded-4xl border border-coffee-beige shadow-2xl overflow-hidden p-6 sm:p-8 animate-scaleIn">
+        <div className="relative bg-white w-full max-w-2xl rounded-4xl border border-coffee-beige shadow-2xl overflow-hidden p-5 sm:p-8 animate-scaleIn">
           
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 p-2 rounded-full bg-coffee-cream text-coffee-dark hover:bg-coffee-beige transition"
+            aria-label="Close modal"
+            className="absolute top-4 right-4 sm:top-5 sm:right-5 z-10 p-2 rounded-full bg-coffee-cream text-coffee-dark hover:bg-coffee-beige transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -202,8 +211,8 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
               </div>
 
               {/* Quantity & Add Action */}
-              <div className="flex items-center gap-4 pt-2">
-                <div className="flex items-center gap-3 border border-coffee-beige rounded-full px-3 py-1.5 bg-coffee-cream/40">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2">
+                <div className="flex items-center justify-between sm:justify-center gap-3 border border-coffee-beige rounded-full px-4 py-2 sm:px-3 sm:py-1.5 bg-coffee-cream/40">
                   <button
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                     className="p-1 hover:text-coffee-orange transition text-coffee-dark"

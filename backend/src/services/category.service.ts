@@ -1,5 +1,6 @@
 import prisma from '../config/database.js';
 import { CreateCategoryInput, UpdateCategoryInput } from '../validators/category.validator.js';
+import { AppError } from '../utils/app-error.util.js';
 
 export class CategoryService {
   async getAll() {
@@ -24,7 +25,7 @@ export class CategoryService {
     });
 
     if (!category) {
-      throw new Error('Category not found.');
+      throw new AppError('Category not found.', 404);
     }
 
     return category;
@@ -35,7 +36,7 @@ export class CategoryService {
 
     const existing = await prisma.category.findUnique({ where: { slug } });
     if (existing) {
-      throw new Error(`Category with slug "${slug}" already exists.`);
+      throw new AppError(`Category with slug "${slug}" already exists.`, 409);
     }
 
     return await prisma.category.create({
@@ -51,7 +52,7 @@ export class CategoryService {
   async update(id: string, data: UpdateCategoryInput) {
     const category = await prisma.category.findUnique({ where: { id } });
     if (!category) {
-      throw new Error('Category not found.');
+      throw new AppError('Category not found.', 404);
     }
 
     let slug = data.slug;
@@ -62,7 +63,7 @@ export class CategoryService {
     if (slug && slug !== category.slug) {
       const existing = await prisma.category.findUnique({ where: { slug } });
       if (existing) {
-        throw new Error(`Category with slug "${slug}" already exists.`);
+        throw new AppError(`Category with slug "${slug}" already exists.`, 409);
       }
     }
 
@@ -78,12 +79,17 @@ export class CategoryService {
   }
 
   async delete(id: string) {
+    const category = await prisma.category.findUnique({ where: { id } });
+    if (!category) {
+      throw new AppError('Category not found.', 404);
+    }
+
     const productCount = await prisma.product.count({
       where: { categoryId: id, deletedAt: null },
     });
 
     if (productCount > 0) {
-      throw new Error(`Cannot delete category with ${productCount} active products.`);
+      throw new AppError(`Cannot delete category with ${productCount} active products.`, 409);
     }
 
     return await prisma.category.delete({ where: { id } });

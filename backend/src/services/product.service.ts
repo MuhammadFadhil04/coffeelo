@@ -1,6 +1,7 @@
 import prisma from '../config/database.js';
 import { CreateProductInput, UpdateProductInput } from '../validators/product.validator.js';
 import { Prisma } from '@prisma/client';
+import { AppError } from '../utils/app-error.util.js';
 
 export interface ProductQueryFilters {
   categoryId?: string;
@@ -23,7 +24,12 @@ export class ProductService {
     };
 
     if (filters?.categoryId && filters.categoryId !== 'all') {
-      where.categoryId = filters.categoryId;
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filters.categoryId);
+      if (isUuid) {
+        where.categoryId = filters.categoryId;
+      } else {
+        where.category = { slug: filters.categoryId };
+      }
     }
 
     if (filters?.isFeatured !== undefined) {
@@ -102,18 +108,22 @@ export class ProductService {
     });
 
     if (!product) {
-      throw new Error('Product not found.');
+      throw new AppError('Product not found.', 404);
     }
 
     return product;
   }
 
   async create(data: CreateProductInput) {
-    const slug = data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const category = await prisma.category.findUnique({ where: { id: data.categoryId } });
+    if (!category) {
+      throw new AppError('Selected category does not exist.', 404);
+    }
+    let slug = data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
     const existingSlug = await prisma.product.findUnique({ where: { slug } });
     if (existingSlug) {
-      throw new Error(`Product with slug "${slug}" already exists.`);
+      slug = `${slug}-${Date.now().toString().slice(-4)}`;
     }
 
     return await prisma.product.create({
@@ -146,7 +156,14 @@ export class ProductService {
   async update(id: string, data: UpdateProductInput) {
     const product = await prisma.product.findUnique({ where: { id } });
     if (!product || product.deletedAt) {
-      throw new Error('Product not found.');
+      throw new AppError('Product not found.', 404);
+    }
+
+    if (data.categoryId) {
+      const category = await prisma.category.findUnique({ where: { id: data.categoryId } });
+      if (!category) {
+        throw new AppError('Selected category does not exist.', 404);
+      }
     }
 
     let slug = data.slug;
@@ -157,7 +174,7 @@ export class ProductService {
     if (slug && slug !== product.slug) {
       const existing = await prisma.product.findUnique({ where: { slug } });
       if (existing) {
-        throw new Error(`Product with slug "${slug}" already exists.`);
+        throw new AppError(`Product with slug "${slug}" already exists.`, 409);
       }
     }
 
@@ -184,7 +201,7 @@ export class ProductService {
   async softDelete(id: string) {
     const product = await prisma.product.findUnique({ where: { id } });
     if (!product || product.deletedAt) {
-      throw new Error('Product not found.');
+      throw new AppError('Product not found.', 404);
     }
 
     return await prisma.product.update({

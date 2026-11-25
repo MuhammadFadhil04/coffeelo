@@ -37,7 +37,7 @@ export const RegisterPage: React.FC = () => {
 
   return (
     <div className="min-h-screen pt-28 pb-20 bg-coffee-cream flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white rounded-4xl p-8 sm:p-10 border border-coffee-beige shadow-card space-y-6">
+      <div className="w-full max-w-md bg-white rounded-4xl p-6 sm:p-10 border border-coffee-beige shadow-card space-y-6">
         
         {/* Header */}
         <div className="text-center space-y-2">

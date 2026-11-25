@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, ShoppingBag, Check, Sparkles } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { Product } from '@/types';
+import { productService } from '@/services/productService';
+import { formatCurrency } from '@/utils/currency';
 
 // Curated specialty coffee catalog matching visual reference in Image 3
 const FEATURED_COFFEES: Product[] = [
@@ -90,10 +92,23 @@ const FEATURED_COFFEES: Product[] = [
 ];
 
 export const FeaturedProductsSection: React.FC = () => {
+  const [coffees, setCoffees] = useState<Product[]>(FEATURED_COFFEES);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [addedItemIds, setAddedItemIds] = useState<Record<string, boolean>>({});
+  const timersRef = useRef<number[]>([]);
   const { addItem, setIsCartOpen } = useCartStore();
+
+  useEffect(() => {
+    productService.getProducts().then((data) => {
+      if (data && data.length > 0) {
+        setCoffees(data);
+      }
+    });
+    return () => {
+      timersRef.current.forEach((t) => window.clearTimeout(t));
+    };
+  }, []);
 
   const categories = [
     { id: 'all', label: 'All Items' },
@@ -103,10 +118,15 @@ export const FeaturedProductsSection: React.FC = () => {
     { id: 'cat-cold', label: 'Cold Brew & Frappé' },
   ];
 
-  const filteredCoffees = FEATURED_COFFEES.filter((coffee) => {
-    const matchesCategory = selectedCategory === 'all' || coffee.categoryId === selectedCategory;
-    const matchesSearch = coffee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          coffee.description.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredCoffees = coffees.filter((coffee) => {
+    const matchesCategory =
+      selectedCategory === 'all' ||
+      coffee.categoryId === selectedCategory ||
+      coffee.category?.id === selectedCategory ||
+      coffee.category?.slug === selectedCategory;
+    const matchesSearch =
+      coffee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      coffee.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -115,9 +135,10 @@ export const FeaturedProductsSection: React.FC = () => {
     
     // Quick success flash state
     setAddedItemIds((prev) => ({ ...prev, [coffee.id]: true }));
-    setTimeout(() => {
+    const timer = window.setTimeout(() => {
       setAddedItemIds((prev) => ({ ...prev, [coffee.id]: false }));
     }, 1500);
+    timersRef.current.push(timer);
 
     // Open cart drawer so user sees instant feedback
     setIsCartOpen(true);
@@ -156,7 +177,7 @@ export const FeaturedProductsSection: React.FC = () => {
         </div>
 
         {/* Category Pills Filter */}
-        <div className="flex items-center gap-2.5 overflow-x-auto pb-4 mb-10 no-scrollbar">
+        <div className="flex items-center gap-2.5 overflow-x-auto py-2 mb-8 no-scrollbar">
           {categories.map((cat) => (
             <button
               key={cat.id}
@@ -206,7 +227,7 @@ export const FeaturedProductsSection: React.FC = () => {
                         {coffee.name}
                       </h3>
                       <span className="font-extrabold text-lg text-coffee-dark">
-                        ${coffee.basePrice.toFixed(0)}$
+                        {formatCurrency(coffee.basePrice)}
                       </span>
                     </div>
                     <p className="text-xs text-coffee-dark/70 line-clamp-2 leading-relaxed">

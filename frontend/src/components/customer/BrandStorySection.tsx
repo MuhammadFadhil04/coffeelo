@@ -11,7 +11,9 @@ export const BrandStorySection: React.FC = () => {
   const imageBlockRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
+    const mm = gsap.matchMedia();
+
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
       gsap.from(orangeBlockRef.current, {
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -35,12 +37,15 @@ export const BrandStorySection: React.FC = () => {
       });
     }, sectionRef);
 
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   const scrollToCollection = () => {
     const el = document.getElementById('collection');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (el) {
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+    }
   };
 
   return (
@@ -66,7 +71,7 @@ export const BrandStorySection: React.FC = () => {
           {/* Left Block: Craft Photography & Packaging */}
           <div
             ref={imageBlockRef}
-            className="lg:col-span-6 relative bg-zinc-950 flex items-center justify-center p-8 sm:p-12 overflow-hidden"
+            className="lg:col-span-6 relative min-h-[260px] sm:min-h-[360px] bg-zinc-950 flex items-center justify-center p-6 sm:p-12 overflow-hidden"
           >
             <img
               src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=900&auto=format&fit=crop"
@@ -82,7 +87,7 @@ export const BrandStorySection: React.FC = () => {
             </div>
 
             {/* Floating Quality Tag */}
-            <div className="absolute bottom-10 right-10 bg-coffee-dark/85 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-white flex items-center gap-2.5">
+            <div className="absolute bottom-5 right-5 sm:bottom-10 sm:right-10 bg-coffee-dark/85 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-white flex items-center gap-2.5">
               <Award className="w-4 h-4 text-coffee-orange" />
               <div className="text-left">
                 <p className="text-[10px] uppercase font-bold text-coffee-beige">Origin Grade</p>
@@ -94,7 +99,7 @@ export const BrandStorySection: React.FC = () => {
           {/* Right Block: Vibrant Burnt Orange Story Section */}
           <div
             ref={orangeBlockRef}
-            className="lg:col-span-6 bg-coffee-orange text-white p-8 sm:p-14 flex flex-col justify-between"
+            className="lg:col-span-6 bg-coffee-orange text-white p-6 sm:p-10 lg:p-14 flex flex-col justify-between"
           >
             <div className="space-y-6">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-coffee-cream/90">
@@ -111,7 +116,7 @@ export const BrandStorySection: React.FC = () => {
               </p>
 
               {/* Story Highlights */}
-              <div className="grid grid-cols-2 gap-4 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 <div className="flex items-start gap-2.5">
                   <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0 mt-0.5">
                     <Check className="w-3 h-3 text-white" />

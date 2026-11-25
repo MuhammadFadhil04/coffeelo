@@ -47,7 +47,8 @@ export const Navbar: React.FC = () => {
     }
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      element.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
     }
   };
 
@@ -81,7 +82,7 @@ export const Navbar: React.FC = () => {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-coffee-dark">
+          <nav className="hidden lg:flex items-center gap-8 text-sm font-medium text-coffee-dark">
             <Link
               to="/menu"
               className={`transition relative py-1 ${
@@ -159,7 +160,7 @@ export const Navbar: React.FC = () => {
 
                 {/* Dropdown Menu */}
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-3xl bg-white border border-coffee-beige shadow-card p-3 space-y-2 z-50 animate-scaleIn">
+                  <div className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] rounded-3xl bg-white border border-coffee-beige shadow-card p-3 space-y-2 z-50 animate-scaleIn">
                     <div className="p-2 border-b border-coffee-beige/60">
                       <p className="font-extrabold text-sm text-coffee-dark truncate">{user.name}</p>
                       <p className="text-[11px] text-coffee-brown truncate">{user.email}</p>
@@ -221,7 +222,7 @@ export const Navbar: React.FC = () => {
             {/* Mobile Hamburger Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-lg text-coffee-dark md:hidden hover:bg-coffee-beige/40"
+              className="p-2 rounded-lg text-coffee-dark lg:hidden hover:bg-coffee-beige/40"
               aria-label="Toggle Navigation Menu"
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -232,7 +233,7 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-coffee-cream border-b border-coffee-beige px-6 py-6 space-y-4 shadow-xl">
+        <div className="lg:hidden max-h-[calc(100vh-4.5rem)] overflow-y-auto bg-coffee-cream border-b border-coffee-beige px-4 sm:px-6 py-6 space-y-4 shadow-xl">
           <div className="flex flex-col space-y-3 font-semibold text-coffee-dark text-base">
             <Link
               to="/menu"

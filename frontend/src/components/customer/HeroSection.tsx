@@ -9,7 +9,9 @@ export const HeroSection: React.FC = () => {
   const beansRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
+    const mm = gsap.matchMedia();
+
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
       // Entrance animation
       gsap.from('.hero-badge', {
         opacity: 0,
@@ -73,12 +75,15 @@ export const HeroSection: React.FC = () => {
       }
     }, heroRef);
 
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (el) {
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+    }
   };
 
   return (
@@ -89,11 +94,11 @@ export const HeroSection: React.FC = () => {
       {/* Background Circular Shape inspired by Image 1 */}
       <div
         ref={circleRef}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[540px] md:w-[680px] lg:w-[780px] h-[340px] sm:h-[540px] md:h-[680px] lg:h-[780px] rounded-full bg-[#D8C4B4] -z-10 shadow-elevation transition-transform pointer-events-none"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] sm:w-[520px] md:w-[660px] lg:w-[760px] h-[280px] sm:h-[520px] md:h-[660px] lg:h-[760px] rounded-full bg-[#D8C4B4] -z-10 shadow-elevation transition-transform pointer-events-none"
       />
 
       {/* Floating Coffee Beans (decorative vector elements) */}
-      <div ref={beansRef} className="absolute inset-0 pointer-events-none -z-5">
+      <div ref={beansRef} className="absolute inset-0 pointer-events-none -z-10">
         <svg
           className="floating-bean absolute top-[22%] left-[18%] sm:left-[28%] w-8 h-8 text-coffee-dark opacity-90 drop-shadow-md"
           viewBox="0 0 24 24"
@@ -133,7 +138,7 @@ export const HeroSection: React.FC = () => {
           {/* Left Hero Details: Tagline & Philosophy */}
           <div className="lg:col-span-3 text-left space-y-6 z-10">
             <div className="hero-badge flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-coffee-orange animate-ping" />
+              <span className="w-2.5 h-2.5 rounded-full bg-coffee-orange animate-ping motion-reduce:animate-none" />
               <span className="text-xs font-black uppercase tracking-wider text-coffee-dark">
                 chilled bold energy.
               </span>
@@ -163,16 +168,16 @@ export const HeroSection: React.FC = () => {
           <div className="lg:col-span-6 relative flex items-center justify-center text-center">
             {/* Giant Graphic Title */}
             <h1 className="hero-title-bg absolute inset-0 flex flex-col items-center justify-center select-none pointer-events-none">
-              <span className="text-7xl sm:text-9xl md:text-[140px] font-black text-coffee-dark tracking-tighter opacity-90 leading-none">
+              <span className="text-6xl sm:text-8xl md:text-[140px] font-black text-coffee-dark tracking-tighter opacity-90 leading-none">
                 ice
               </span>
-              <span className="text-7xl sm:text-9xl md:text-[140px] font-black text-coffee-dark tracking-tighter opacity-90 leading-none">
+              <span className="text-6xl sm:text-8xl md:text-[140px] font-black text-coffee-dark tracking-tighter opacity-90 leading-none">
                 coffee
               </span>
             </h1>
 
             {/* Central Product Image: Iced Coffee with ice cubes & splash */}
-            <div className="relative z-10 w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] aspect-square flex items-center justify-center">
+            <div className="relative z-10 w-full max-w-[260px] sm:max-w-[400px] md:max-w-[460px] aspect-square flex items-center justify-center">
               <img
                 ref={cupRef}
                 src="https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?q=80&w=900&auto=format&fit=crop"
