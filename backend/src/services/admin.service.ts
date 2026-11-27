@@ -433,11 +433,14 @@ export class AdminService {
       storePhone: '+62 21 555 0192',
       storeEmail: 'hello@coffeelo.com',
       operatingHours: 'Senin - Minggu: 07:00 - 22:00 WIB',
-      deliveryFeeFlat: '3.50',
+      deliveryFeeFlat: '15000',
       taxPercentage: '10',
     };
 
     for (const s of settings) {
+      if (s.key === 'deliveryFeeFlat' && Number(s.value) > 0 && Number(s.value) < 100) {
+        continue;
+      }
       map[s.key] = s.value;
     }
 

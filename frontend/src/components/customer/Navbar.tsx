@@ -28,7 +28,6 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
@@ -76,13 +75,13 @@ export const Navbar: React.FC = () => {
             <div className="flex flex-col">
               <span className="font-extrabold text-2xl tracking-tight text-coffee-dark">Coffeelo</span>
               <span className="text-[10px] tracking-widest uppercase font-semibold text-coffee-orange -mt-1">
-                Café & Roastery
+                Kedai & Sangrai Kopi
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-8 text-sm font-medium text-coffee-dark">
+          <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold text-coffee-dark">
             <Link
               to="/menu"
               className={`transition relative py-1 ${
@@ -91,31 +90,35 @@ export const Navbar: React.FC = () => {
                   : 'hover:text-coffee-orange'
               }`}
             >
-              Full Menu
+              Menu Lengkap
             </Link>
             <button
+              type="button"
               onClick={() => scrollToSection('story')}
-              className="hover:text-coffee-orange transition relative py-1"
+              className="hover:text-coffee-orange transition relative py-1 cursor-pointer"
             >
-              Philosophy
+              Filosofi
             </button>
             <button
+              type="button"
               onClick={() => scrollToSection('showcase')}
-              className="hover:text-coffee-orange transition relative py-1"
+              className="hover:text-coffee-orange transition relative py-1 cursor-pointer"
             >
-              Signature
+              Andalan
             </button>
             <button
+              type="button"
               onClick={() => scrollToSection('testimonials')}
-              className="hover:text-coffee-orange transition relative py-1"
+              className="hover:text-coffee-orange transition relative py-1 cursor-pointer"
             >
-              Guests
+              Ulasan Tamu
             </button>
             <button
+              type="button"
               onClick={() => scrollToSection('location')}
-              className="hover:text-coffee-orange transition relative py-1"
+              className="hover:text-coffee-orange transition relative py-1 cursor-pointer"
             >
-              Visit
+              Lokasi
             </button>
             <button
               type="button"
@@ -135,8 +138,9 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-3">
             {/* Cart Button */}
             <button
+              type="button"
               onClick={() => (user ? setIsCartOpen(true) : openAuthModal('/cart'))}
-              aria-label="Open Cart"
+              aria-label="Buka Keranjang"
               className="relative p-2.5 rounded-full hover:bg-coffee-beige/40 text-coffee-dark transition flex items-center justify-center cursor-pointer"
             >
               <ShoppingBag className="w-5 h-5" />
@@ -151,8 +155,9 @@ export const Navbar: React.FC = () => {
             {user ? (
               <div className="relative" ref={userMenuRef}>
                 <button
+                  type="button"
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 p-1.5 rounded-full bg-coffee-beige/60 hover:bg-coffee-beige text-coffee-dark transition border border-coffee-beige"
+                  className="flex items-center gap-2 p-1.5 rounded-full bg-coffee-beige/60 hover:bg-coffee-beige text-coffee-dark transition border border-coffee-beige cursor-pointer"
                 >
                   {user.avatarUrl ? (
                     <img
@@ -170,14 +175,19 @@ export const Navbar: React.FC = () => {
                   </span>
                 </button>
 
-                {/* Dropdown Menu */}
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] rounded-3xl bg-white border border-coffee-beige shadow-card p-3 space-y-2 z-50 animate-scaleIn">
                     <div className="p-2 border-b border-coffee-beige/60">
                       <p className="font-extrabold text-sm text-coffee-dark truncate">{user.name}</p>
                       <p className="text-[11px] text-coffee-brown truncate">{user.email}</p>
-                      <span className={`inline-block mt-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full ${user.role === 'ADMIN' ? 'bg-coffee-orange text-white' : 'bg-coffee-cream text-coffee-dark'}`}>
-                        {user.role}
+                      <span
+                        className={`inline-block mt-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                          user.role === 'ADMIN'
+                            ? 'bg-coffee-orange text-white'
+                            : 'bg-coffee-cream text-coffee-dark'
+                        }`}
+                      >
+                        {user.role === 'ADMIN' ? 'Administrator' : 'Pelanggan'}
                       </span>
                     </div>
 
@@ -188,7 +198,7 @@ export const Navbar: React.FC = () => {
                         className="flex items-center gap-2 p-2 rounded-xl hover:bg-coffee-cream transition"
                       >
                         <User className="w-4 h-4 text-coffee-brown" />
-                        My Profile
+                        Profil Saya
                       </Link>
 
                       <Link
@@ -197,7 +207,7 @@ export const Navbar: React.FC = () => {
                         className="flex items-center gap-2 p-2 rounded-xl hover:bg-coffee-cream transition"
                       >
                         <Package className="w-4 h-4 text-coffee-orange" />
-                        My Orders
+                        Pesanan Saya
                       </Link>
 
                       <Link
@@ -206,7 +216,7 @@ export const Navbar: React.FC = () => {
                         className="flex items-center gap-2 p-2 rounded-xl hover:bg-coffee-cream transition"
                       >
                         <ShoppingCart className="w-4 h-4 text-coffee-orange" />
-                        My Basket
+                        Keranjang Saya
                       </Link>
 
                       {user.role === 'ADMIN' && (
@@ -216,16 +226,17 @@ export const Navbar: React.FC = () => {
                           className="flex items-center gap-2 p-2 rounded-xl hover:bg-coffee-cream text-coffee-orange transition font-bold"
                         >
                           <ShieldCheck className="w-4 h-4" />
-                          Admin Dashboard
+                          Dasbor Admin
                         </Link>
                       )}
 
                       <button
+                        type="button"
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2 p-2 rounded-xl hover:bg-rose-50 text-rose-600 transition"
+                        className="w-full flex items-center gap-2 p-2 rounded-xl hover:bg-rose-50 text-rose-600 transition cursor-pointer"
                       >
                         <LogOut className="w-4 h-4" />
-                        Sign Out
+                        Keluar
                       </button>
                     </div>
                   </div>
@@ -237,7 +248,7 @@ export const Navbar: React.FC = () => {
                 className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-coffee-beige bg-white/70 hover:bg-white text-coffee-dark font-bold text-xs transition"
               >
                 <User className="w-3.5 h-3.5 text-coffee-orange" />
-                Sign In
+                Masuk
               </Link>
             )}
 
@@ -246,14 +257,15 @@ export const Navbar: React.FC = () => {
               to="/menu"
               className="hidden sm:inline-flex items-center px-5 py-2.5 rounded-full bg-coffee-dark hover:bg-coffee-dark/90 text-white font-semibold text-xs tracking-wide uppercase transition-all hover:shadow-card active:scale-95"
             >
-              Order Now
+              Pesan Sekarang
             </Link>
 
             {/* Mobile Hamburger Toggle */}
             <button
+              type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 rounded-lg text-coffee-dark lg:hidden hover:bg-coffee-beige/40"
-              aria-label="Toggle Navigation Menu"
+              aria-label="Buka Menu Navigasi"
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -270,31 +282,35 @@ export const Navbar: React.FC = () => {
               onClick={() => setIsMobileMenuOpen(false)}
               className="text-left py-2 hover:text-coffee-orange transition border-b border-coffee-beige/40"
             >
-              Full Menu
+              Menu Lengkap
             </Link>
             <button
+              type="button"
               onClick={() => scrollToSection('story')}
               className="text-left py-2 hover:text-coffee-orange transition border-b border-coffee-beige/40"
             >
-              Philosophy
+              Filosofi
             </button>
             <button
+              type="button"
               onClick={() => scrollToSection('showcase')}
               className="text-left py-2 hover:text-coffee-orange transition border-b border-coffee-beige/40"
             >
-              Signature Coffee
+              Kopi Andalan
             </button>
             <button
+              type="button"
               onClick={() => scrollToSection('testimonials')}
               className="text-left py-2 hover:text-coffee-orange transition border-b border-coffee-beige/40"
             >
-              Guests & Reviews
+              Ulasan Tamu
             </button>
             <button
+              type="button"
               onClick={() => scrollToSection('location')}
               className="text-left py-2 hover:text-coffee-orange transition border-b border-coffee-beige/40"
             >
-              Visit Store
+              Lokasi Gerai
             </button>
             <button
               type="button"
@@ -319,14 +335,15 @@ export const Navbar: React.FC = () => {
               onClick={() => setIsMobileMenuOpen(false)}
               className="w-full py-3 rounded-full bg-coffee-orange text-white font-bold text-center text-sm shadow-card"
             >
-              Order Now
+              Pesan Sekarang
             </Link>
             {user ? (
               <button
+                type="button"
                 onClick={handleLogout}
                 className="w-full py-2.5 rounded-full border border-rose-400 text-rose-600 font-semibold text-center text-sm"
               >
-                Sign Out ({user.name})
+                Keluar ({user.name})
               </button>
             ) : (
               <div className="grid grid-cols-2 gap-2">
@@ -335,14 +352,14 @@ export const Navbar: React.FC = () => {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="w-full py-2.5 rounded-full border border-coffee-dark text-coffee-dark font-semibold text-center text-sm"
                 >
-                  Sign In
+                  Masuk
                 </Link>
                 <Link
                   to="/register"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="w-full py-2.5 rounded-full bg-coffee-dark text-white font-semibold text-center text-sm"
                 >
-                  Register
+                  Daftar
                 </Link>
               </div>
             )}

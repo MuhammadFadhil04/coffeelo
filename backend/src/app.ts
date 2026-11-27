@@ -10,6 +10,7 @@ import productRouter from './routes/product.route.js';
 import orderRouter from './routes/order.route.js';
 import paymentRouter from './routes/payment.route.js';
 import adminRouter from './routes/admin.route.js';
+import { adminService } from './services/admin.service.js';
 
 const app: Application = express();
 
@@ -29,6 +30,14 @@ app.use('/api', apiRateLimiter);
 
 // API Routes
 app.use('/api/health', healthRouter);
+app.get('/api/settings', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const settings = await adminService.getStoreSettings();
+    res.status(200).json({ success: true, data: settings });
+  } catch (err) {
+    next(err);
+  }
+});
 app.use('/api/auth', authRateLimiter, authRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/products', productRouter);

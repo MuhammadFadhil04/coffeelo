@@ -114,13 +114,19 @@ export const ProductsPage: React.FC = () => {
     setFormData({
       name: prod.name,
       categoryId: prod.categoryId,
-      basePrice: String(prod.basePrice),
-      stock: String(prod.stock),
+      basePrice: String(Number(prod.basePrice) || 0),
+      stock: String(Number(prod.stock) || 0),
       imageUrl: prod.imageUrl,
       description: prod.description,
       isAvailable: prod.isAvailable,
       isFeatured: prod.isFeatured,
-      variants: prod.variants || [],
+      variants: (prod.variants || []).map((v) => ({
+        id: v.id,
+        name: v.name,
+        optionValue: v.optionValue,
+        priceAdjustment: Number(v.priceAdjustment) || 0,
+        stock: Number(v.stock) || 50,
+      })),
     });
     setIsModalOpen(true);
   };
@@ -132,18 +138,38 @@ export const ProductsPage: React.FC = () => {
       return;
     }
 
+    const hasIncompleteVariant = formData.variants.some(
+      (v) => !v.name.trim() || !v.optionValue.trim()
+    );
+    if (hasIncompleteVariant) {
+      alert('Mohon lengkapi nama dan nilai opsi pada setiap varian.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      const normalizedVariants = formData.variants.map((v) => ({
+        ...(v.id ? { id: v.id } : {}),
+        name: v.name.trim(),
+        optionValue: v.optionValue.trim(),
+        priceAdjustment: Number(v.priceAdjustment) || 0,
+        stock: Math.max(0, Math.round(Number(v.stock) || 50)),
+      }));
+
       const payload = {
-        name: formData.name,
+        name: formData.name.trim(),
         categoryId: formData.categoryId,
-        basePrice: parseFloat(formData.basePrice),
-        stock: parseInt(formData.stock) || 0,
-        imageUrl: formData.imageUrl,
-        description: formData.description || formData.name,
+        basePrice: Number(formData.basePrice),
+        stock: Math.max(0, parseInt(formData.stock, 10) || 0),
+        imageUrl: formData.imageUrl.trim(),
+        description: (formData.description || formData.name).trim(),
         isAvailable: formData.isAvailable,
         isFeatured: formData.isFeatured,
-        variants: formData.variants.length > 0 ? formData.variants : undefined,
+        variants: editingProduct
+          ? normalizedVariants
+          : normalizedVariants.length > 0
+            ? normalizedVariants
+            : undefined,
       };
 
       if (editingProduct) {
@@ -155,7 +181,13 @@ export const ProductsPage: React.FC = () => {
       setIsModalOpen(false);
       await fetchData();
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Gagal menyimpan produk.');
+      const details = err.response?.data?.errors
+        ?.map((item: { field?: string; message?: string }) =>
+          item.field ? `${item.field}: ${item.message}` : item.message
+        )
+        .filter(Boolean)
+        .join('\n');
+      alert(details || err.response?.data?.message || err.message || 'Gagal menyimpan produk.');
     } finally {
       setIsSubmitting(false);
     }
@@ -188,7 +220,7 @@ export const ProductsPage: React.FC = () => {
       ...prev,
       variants: [
         ...prev.variants,
-        { name: 'Ukuran', optionValue: 'Large (+$1.50)', priceAdjustment: 1.5, stock: 50 },
+        { name: 'Ukuran', optionValue: 'Besar (+Rp 8.000)', priceAdjustment: 8000, stock: 50 },
       ],
     }));
   };
@@ -316,7 +348,7 @@ export const ProductsPage: React.FC = () => {
                           <p className="text-[11px] text-[#71351D]/60 truncate max-w-xs">{prod.description}</p>
                           {prod.isFeatured && (
                             <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-amber-100 text-amber-800 border border-amber-200">
-                              Featured Signature
+                              Menu Andalan
                             </span>
                           )}
                         </div>
@@ -420,13 +452,13 @@ export const ProductsPage: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block mb-1.5">Harga Dasar ($ USD) *</label>
+                  <label className="block mb-1.5">Harga Dasar (Rp IDR) *</label>
                   <input
                     type="number"
                     required
-                    min="0.01"
-                    step="0.01"
-                    placeholder="4.50"
+                    min="500"
+                    step="500"
+                    placeholder="35000"
                     value={formData.basePrice}
                     onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-[#E5D4C6] bg-[#F4EDE5]/40 focus:outline-none focus:ring-1 focus:ring-[#B6370B]"
@@ -492,7 +524,7 @@ export const ProductsPage: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
                     className="rounded text-[#B6370B] focus:ring-[#B6370B]"
                   />
-                  <span>Tampilkan di Featured Showcase</span>
+                  <span>Tampilkan di Menu Andalan</span>
                 </label>
               </div>
 
@@ -538,8 +570,9 @@ export const ProductsPage: React.FC = () => {
                     <div className="sm:col-span-4 flex items-center gap-2">
                       <input
                         type="number"
-                        step="0.01"
-                        placeholder="+Harga ($)"
+                        step="500"
+                        min="0"
+                        placeholder="+Harga (Rp)"
                         value={v.priceAdjustment}
                         onChange={(e) => {
                           const copy = [...formData.variants];

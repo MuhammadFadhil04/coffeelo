@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import http from 'http';
 import app from '../src/app.js';
+import prisma from '../src/config/database.js';
 import { signToken } from '../src/utils/jwt.util.js';
 import { Role } from '@prisma/client';
 
@@ -60,6 +61,20 @@ async function main() {
 
   const { server, baseUrl } = await startTestServer();
 
+  let adminActor = { id: 'mock-admin-uuid', email: 'admin@test.com' };
+  let customerActor = { id: 'mock-customer-uuid', email: 'customer@test.com' };
+
+  try {
+    const [dbAdmin, dbCustomer] = await Promise.all([
+      prisma.user.findFirst({ where: { role: Role.ADMIN }, select: { id: true, email: true } }),
+      prisma.user.findFirst({ where: { role: Role.CUSTOMER }, select: { id: true, email: true } }),
+    ]);
+    if (dbAdmin) adminActor = dbAdmin;
+    if (dbCustomer) customerActor = dbCustomer;
+  } catch {
+    // Database offline in isolated test environment; auth middleware handles test-mode fallback
+  }
+
   try {
     // SUITE 1: Server Health & Security Headers
     console.log('📦 SUITE 1: Server Health & Security Headers');
@@ -68,6 +83,15 @@ async function main() {
       if (res.status !== 200) throw new Error(`Expected 200, got ${res.status}`);
       const body: any = await res.json();
       if (!body.success) throw new Error('Body.success was not true');
+    });
+
+    await runTest('Settings', 'Public Store Settings returns deliveryFeeFlat & taxPercentage', async () => {
+      const res = await fetch(`${baseUrl}/api/settings`);
+      if (res.status !== 200) throw new Error(`Expected 200, got ${res.status}`);
+      const body: any = await res.json();
+      if (!body.success || !body.data?.deliveryFeeFlat || body.data?.taxPercentage === undefined) {
+        throw new Error('Missing store pricing settings payload');
+      }
     });
 
     await runTest('Security', 'Security Headers (nosniff, DENY, no x-powered-by)', async () => {
@@ -111,8 +135,8 @@ async function main() {
 
     await runTest('Validation', 'Rejects invalid admin query status with HTTP 422', async () => {
       const adminToken = signToken({
-        userId: 'mock-admin-uuid',
-        email: 'admin@test.com',
+        userId: adminActor.id,
+        email: adminActor.email,
         role: Role.ADMIN,
       });
       const res = await fetch(`${baseUrl}/api/admin/orders?status=NOT_A_VALID_ENUM`, {
@@ -125,8 +149,8 @@ async function main() {
 
     await runTest('Validation', 'Rejects arbitrary unknown keys on PUT /api/admin/settings (HTTP 422)', async () => {
       const adminToken = signToken({
-        userId: 'mock-admin-uuid',
-        email: 'admin@test.com',
+        userId: adminActor.id,
+        email: adminActor.email,
         role: Role.ADMIN,
       });
       const res = await fetch(`${baseUrl}/api/admin/settings`, {
@@ -175,8 +199,8 @@ async function main() {
 
     await runTest('RBAC', 'Customer role token accessing /api/admin/orders returns 403 Forbidden', async () => {
       const customerToken = signToken({
-        userId: 'mock-customer-uuid',
-        email: 'customer@test.com',
+        userId: customerActor.id,
+        email: customerActor.email,
         role: Role.CUSTOMER,
       });
       const res = await fetch(`${baseUrl}/api/admin/orders`, {
@@ -191,8 +215,8 @@ async function main() {
 
     await runTest('RBAC', 'Admin role token passes authorization middleware', async () => {
       const adminToken = signToken({
-        userId: 'mock-admin-uuid',
-        email: 'admin@test.com',
+        userId: adminActor.id,
+        email: adminActor.email,
         role: Role.ADMIN,
       });
       const res = await fetch(`${baseUrl}/api/admin/orders`, {
@@ -224,6 +248,7 @@ async function main() {
 
   } finally {
     server.close();
+    await prisma.$disconnect();
   }
 
   // Summary Report

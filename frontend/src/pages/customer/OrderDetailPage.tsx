@@ -372,7 +372,7 @@ export default function OrderDetailPage() {
             <div className="flex items-start gap-3">
               <Store size={18} className="text-[#B6370B] flex-shrink-0 mt-0.5" />
               <div>
-                <div className="font-semibold text-[#451B0E] text-sm">Pickup di Toko</div>
+                <div className="font-semibold text-[#451B0E] text-sm">Ambil di Gerai</div>
                 {order.storeLocation && (
                   <div className="text-sm text-[#71351D]/70 mt-1">{order.storeLocation}</div>
                 )}

@@ -5,6 +5,7 @@ import { Product, Category } from '@/types';
 import { productService } from '@/services/productService';
 import { QuickViewModal } from '@/components/customer/QuickViewModal';
 import { useAuthStore } from '@/stores/authStore';
+import { formatCurrency } from '@/utils/currency';
 
 export const MenuPage: React.FC = () => {
   const { user, openAuthModal } = useAuthStore();
@@ -51,23 +52,24 @@ export const MenuPage: React.FC = () => {
   return (
     <div className="pt-24 pb-20 bg-coffee-cream min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
         {/* Breadcrumb & Header Banner */}
-        <div className="mb-10 space-y-3">
+        <div className="mb-8 space-y-3">
           <nav className="flex items-center gap-2 text-xs text-coffee-brown">
-            <Link to="/" className="hover:text-coffee-orange transition">Home</Link>
+            <Link to="/" className="hover:text-coffee-orange transition">
+              Beranda
+            </Link>
             <span>/</span>
-            <span className="font-bold text-coffee-dark">Specialty Menu</span>
+            <span className="font-bold text-coffee-dark">Menu Kopi Spesialti</span>
           </nav>
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-coffee-orange mb-1">
                 <Sparkles className="w-3.5 h-3.5" />
-                Crafted Fresh Daily
+                Diracik Segar Setiap Hari
               </div>
               <h1 className="text-4xl sm:text-5xl font-black text-coffee-dark tracking-tight">
-                Specialty Coffee Menu
+                Katalog Menu Kopi
               </h1>
             </div>
           </div>
@@ -75,56 +77,57 @@ export const MenuPage: React.FC = () => {
 
         {/* Filter & Controls Toolbar */}
         <div className="bg-white rounded-3xl p-4 sm:p-6 border border-coffee-beige shadow-subtle mb-8 space-y-4">
-
           {/* Search and Sort Row */}
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-            {/* Search Input */}
             <div className="sm:col-span-8 relative">
               <Search className="w-4 h-4 text-coffee-brown absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search coffee by name, origin, or flavor note..."
+                placeholder="Cari kopi berdasarkan nama, daerah asal, atau catatan rasa..."
                 className="w-full pl-11 pr-10 py-3 rounded-full bg-coffee-cream/40 border border-coffee-beige text-xs text-coffee-dark placeholder-coffee-brown/60 focus:outline-none focus:ring-2 focus:ring-coffee-orange/40"
               />
               {searchQuery && (
                 <button
+                  type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-coffee-brown hover:text-coffee-dark"
+                  aria-label="Hapus pencarian"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-coffee-brown hover:text-coffee-dark cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               )}
             </div>
 
-            {/* Sort Select */}
             <div className="sm:col-span-4 flex items-center justify-end gap-2">
-              <span className="text-xs font-bold text-coffee-dark shrink-0">Sort By:</span>
+              <span className="text-xs font-bold text-coffee-dark shrink-0">Urutkan:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="w-full sm:w-auto px-4 py-2.5 rounded-full bg-coffee-cream/40 border border-coffee-beige text-xs font-semibold text-coffee-dark focus:outline-none focus:ring-2 focus:ring-coffee-orange/40 cursor-pointer"
               >
-                <option value="featured">Featured / Best Seller</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="name-asc">Alphabetical (A - Z)</option>
-                <option value="rating">Top Rated</option>
+                <option value="featured">Unggulan / Terlaris</option>
+                <option value="price-asc">Harga: Terendah ke Tertinggi</option>
+                <option value="price-desc">Harga: Tertinggi ke Terendah</option>
+                <option value="name-asc">Alfabet (A - Z)</option>
+                <option value="rating">Rating Tertinggi</option>
               </select>
             </div>
           </div>
 
           {/* Category Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar pt-2 border-t border-coffee-beige/60">
+          <div className="flex flex-wrap items-center gap-2 pb-1 pt-2 border-t border-coffee-beige/60">
             {categories.map((cat) => (
               <button
                 key={cat.id}
+                type="button"
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${selectedCategory === cat.id
+                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
+                  selectedCategory === cat.id
                     ? 'bg-coffee-dark text-white shadow-sm'
                     : 'bg-coffee-cream/60 hover:bg-coffee-beige/60 text-coffee-dark border border-coffee-beige/60'
-                  }`}
+                }`}
               >
                 {cat.name}
               </button>
@@ -134,52 +137,63 @@ export const MenuPage: React.FC = () => {
           {/* Secondary Filters: Roast & Temperature */}
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs font-medium border-t border-coffee-beige/40">
             <div className="flex flex-wrap items-center gap-4">
-              {/* Roast Filter */}
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="font-bold text-coffee-dark">Roast:</span>
-                {['all', 'Light', 'Medium', 'Medium-Dark', 'Dark'].map((r) => (
+                <span className="font-bold text-coffee-dark">Sangrai:</span>
+                {[
+                  { value: 'all', label: 'Semua' },
+                  { value: 'Light', label: 'Ringan' },
+                  { value: 'Medium', label: 'Sedang' },
+                  { value: 'Medium-Dark', label: 'Sedang-Gelap' },
+                  { value: 'Dark', label: 'Gelap' },
+                ].map((r) => (
                   <button
-                    key={r}
-                    onClick={() => setSelectedRoast(r)}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition ${selectedRoast === r
+                    key={r.value}
+                    type="button"
+                    onClick={() => setSelectedRoast(r.value)}
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition cursor-pointer ${
+                      selectedRoast === r.value
                         ? 'bg-coffee-orange text-white'
                         : 'text-coffee-dark hover:bg-coffee-cream'
-                      }`}
+                    }`}
                   >
-                    {r === 'all' ? 'All' : r}
+                    {r.label}
                   </button>
                 ))}
               </div>
 
-              {/* Temperature Filter */}
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="font-bold text-coffee-dark">Temp:</span>
-                {['all', 'Hot', 'Iced'].map((t) => (
+                <span className="font-bold text-coffee-dark">Suhu:</span>
+                {[
+                  { value: 'all', label: 'Semua' },
+                  { value: 'Hot', label: 'Panas' },
+                  { value: 'Iced', label: 'Dingin' },
+                ].map((t) => (
                   <button
-                    key={t}
-                    onClick={() => setSelectedTemp(t)}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition ${selectedTemp === t
+                    key={t.value}
+                    type="button"
+                    onClick={() => setSelectedTemp(t.value)}
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition cursor-pointer ${
+                      selectedTemp === t.value
                         ? 'bg-coffee-orange text-white'
                         : 'text-coffee-dark hover:bg-coffee-cream'
-                      }`}
+                    }`}
                   >
-                    {t === 'all' ? 'All' : t}
+                    {t.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Clear Filters Button */}
             {hasActiveFilters && (
               <button
+                type="button"
                 onClick={resetFilters}
-                className="text-xs text-rose-600 hover:text-rose-700 font-bold underline transition"
+                className="text-xs text-rose-600 hover:text-rose-700 font-bold underline transition cursor-pointer"
               >
-                Reset All Filters
+                Atur Ulang Filter
               </button>
             )}
           </div>
-
         </div>
 
         {/* Product Grid */}
@@ -189,16 +203,17 @@ export const MenuPage: React.FC = () => {
               <Coffee className="w-7 h-7" />
             </div>
             <div>
-              <h3 className="font-bold text-lg text-coffee-dark">No products found</h3>
+              <h3 className="font-bold text-lg text-coffee-dark">Produk Tidak Ditemukan</h3>
               <p className="text-xs text-coffee-brown max-w-sm mx-auto mt-1">
-                We couldn't find any coffee matching your exact filter combination. Try adjusting or resetting your search.
+                Kami tidak menemukan kopi yang cocok dengan filter tersebut. Silakan atur ulang filter pencarian Anda.
               </p>
             </div>
             <button
+              type="button"
               onClick={resetFilters}
-              className="px-5 py-2.5 rounded-full bg-coffee-orange text-white text-xs font-bold hover:bg-coffee-orange/90 transition shadow-sm"
+              className="px-5 py-2.5 rounded-full bg-coffee-orange text-white text-xs font-bold hover:bg-coffee-orange/90 transition shadow-sm cursor-pointer"
             >
-              Show All Coffees
+              Tampilkan Semua Menu
             </button>
           </div>
         ) : (
@@ -208,7 +223,6 @@ export const MenuPage: React.FC = () => {
                 key={product.id}
                 className="group rounded-4xl bg-white border border-coffee-beige p-5 flex flex-col justify-between transition-all duration-300 hover:shadow-elevation hover:-translate-y-1"
               >
-                {/* Product Image & Badges */}
                 <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-coffee-cream/40 p-4 mb-4 flex items-center justify-center">
                   <img
                     src={product.imageUrl}
@@ -228,7 +242,6 @@ export const MenuPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Info & Tasting Notes */}
                 <div className="space-y-2 mb-4">
                   <div className="flex items-start justify-between gap-2">
                     <Link
@@ -238,7 +251,7 @@ export const MenuPage: React.FC = () => {
                       {product.name}
                     </Link>
                     <span className="font-black text-lg text-coffee-orange shrink-0">
-                      ${product.basePrice.toFixed(2)}
+                      {formatCurrency(product.basePrice)}
                     </span>
                   </div>
 
@@ -246,7 +259,6 @@ export const MenuPage: React.FC = () => {
                     {product.description}
                   </p>
 
-                  {/* Flavor Chips */}
                   {product.tastingNotes && (
                     <div className="flex flex-wrap gap-1 pt-1">
                       {product.tastingNotes.slice(0, 2).map((n, i) => (
@@ -261,15 +273,15 @@ export const MenuPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Action Buttons Row */}
                 <div className="pt-3 border-t border-coffee-beige/50 flex items-center gap-2">
                   <Link
                     to={`/menu/${product.slug}`}
                     className="flex-1 py-2.5 px-3 rounded-full border border-coffee-beige hover:border-coffee-dark text-coffee-dark text-xs font-bold text-center transition"
                   >
-                    View Details
+                    Lihat Detail
                   </Link>
                   <button
+                    type="button"
                     onClick={() => {
                       if (!user) {
                         openAuthModal(`/menu/${product.slug}`);
@@ -280,17 +292,15 @@ export const MenuPage: React.FC = () => {
                     className="px-4 py-2.5 rounded-full bg-coffee-orange hover:bg-coffee-orange/90 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm active:scale-95 cursor-pointer"
                   >
                     <ShoppingBag className="w-3.5 h-3.5" />
-                    Order
+                    Pesan
                   </button>
                 </div>
               </div>
             ))}
           </div>
         )}
-
       </div>
 
-      {/* Quick View Customizer Modal */}
       <QuickViewModal
         product={quickViewProduct}
         isOpen={!!quickViewProduct}

@@ -1,8 +1,6 @@
 import crypto from 'crypto';
 import { AppError } from '../utils/app-error.util.js';
 
-const USD_TO_IDR = 15_500;
-
 export interface MidtransCustomerDetails {
   first_name: string;
   email: string;
@@ -25,7 +23,7 @@ export class MidtransService {
     params: SnapTransactionParams
   ): Promise<{ snapToken: string; redirectUrl: string }> {
     const serverKey = this.getServerKey();
-    const grossAmount = Math.round(params.grossAmount * USD_TO_IDR);
+    const grossAmount = Math.round(params.grossAmount);
 
     if (!Number.isSafeInteger(grossAmount) || grossAmount <= 0) {
       throw new AppError('Order total is invalid for Midtrans payment.', 400);
@@ -84,7 +82,7 @@ export class MidtransService {
   }
 
   convertUsdToIdr(amount: number): number {
-    return Math.round(amount * USD_TO_IDR);
+    return Math.round(amount);
   }
 
   verifySignature(

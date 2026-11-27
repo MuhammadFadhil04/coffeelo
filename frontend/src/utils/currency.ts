@@ -1,8 +1,8 @@
-const usdFormatter = new Intl.NumberFormat('en-US', {
+const idrFormatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
-  currency: 'USD',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
+  currency: 'IDR',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
 });
 
-export const formatCurrency = (amount: number) => usdFormatter.format(amount || 0);
+export const formatCurrency = (amount: number) => idrFormatter.format(Math.round(amount || 0));

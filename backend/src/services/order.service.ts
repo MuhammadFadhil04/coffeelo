@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { releaseOrderInventory, reserveOrderInventory } from '../utils/order-inventory.util.js';
 import { AppError } from '../utils/app-error.util.js';
 
-const roundMoney = (amount: number) => Math.round((amount + Number.EPSILON) * 100) / 100;
+const roundMoney = (amount: number) => Math.round(amount);
 
 const REQUIRES_PAID_STATUSES: ReadonlySet<OrderStatus> = new Set([
   OrderStatus.PROCESSING,
@@ -136,9 +136,9 @@ export class OrderService {
     const settingsMap = new Map(settingsRows.map((s) => [s.key, Number(s.value)]));
     const configuredDeliveryFee = settingsMap.get('deliveryFeeFlat');
     const flatDeliveryFee =
-      configuredDeliveryFee !== undefined && Number.isFinite(configuredDeliveryFee) && configuredDeliveryFee >= 0
+      configuredDeliveryFee !== undefined && Number.isFinite(configuredDeliveryFee) && configuredDeliveryFee >= 100
         ? configuredDeliveryFee
-        : 2.5;
+        : 15000;
     const configuredTaxPct = settingsMap.get('taxPercentage');
     const taxRatePct =
       configuredTaxPct !== undefined && Number.isFinite(configuredTaxPct) && configuredTaxPct >= 0 && configuredTaxPct <= 50
@@ -147,7 +147,7 @@ export class OrderService {
 
     let deliveryFee = 0;
     if (input.type === 'DELIVERY') {
-      deliveryFee = calculatedSubtotal >= 25 ? 0 : roundMoney(flatDeliveryFee);
+      deliveryFee = calculatedSubtotal >= 150000 ? 0 : roundMoney(flatDeliveryFee);
     }
 
     let discountAmount = 0;

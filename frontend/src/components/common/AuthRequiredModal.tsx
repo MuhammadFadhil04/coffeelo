@@ -62,11 +62,11 @@ export const AuthRequiredModal: React.FC = () => {
         <div className="rounded-2xl bg-coffee-cream/70 border border-coffee-beige/80 p-3.5 space-y-2 text-xs text-coffee-dark">
           <div className="flex items-center gap-2 font-semibold">
             <CheckCircle2 className="w-4 h-4 text-coffee-orange shrink-0" />
-            <span>Simpan keranjang & lacak status seduhan real-time</span>
+            <span>Simpan keranjang & lacak status seduhan secara langsung</span>
           </div>
           <div className="flex items-center gap-2 font-semibold">
             <Coffee className="w-4 h-4 text-coffee-orange shrink-0" />
-            <span>Akses Express Pickup & pengiriman kurir instan</span>
+            <span>Akses Ambil Cepat di gerai & pengiriman kurir instan</span>
           </div>
         </div>
 

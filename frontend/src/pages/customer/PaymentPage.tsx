@@ -550,12 +550,12 @@ export default function PaymentPage() {
                 {order.fulfillmentType === 'PICKUP' ? (
                   <>
                     <Store size={14} className="text-[#B6370B]" />
-                    Pickup di Gerai
+                    Ambil di Gerai
                   </>
                 ) : (
                   <>
                     <Truck size={14} className="text-[#B6370B]" />
-                    Delivery Kurir
+                    Antar Kurir
                   </>
                 )}
               </span>

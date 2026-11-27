@@ -1,128 +1,160 @@
-import React from 'react';
-import { Star } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, MessageSquareDashed, Coffee } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-interface Testimonial {
+export interface GuestReview {
   id: string;
   name: string;
-  rating: number;
+  rating: 1 | 2 | 3 | 4 | 5;
   comment: string;
-  avatarUrl: string;
-  bgClass: string;
-  textClass: string;
+  createdAt: string;
 }
 
-const TESTIMONIALS: Testimonial[] = [
-  {
-    id: 't-1',
-    name: 'Lylia',
-    rating: 5,
-    comment:
-      'Coffeelo has quickly become my go-to place for both work and relaxation. The cozy atmosphere, paired with the soothing music and perfectly brewed coffee makes every morning exceptional.',
-    avatarUrl:
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop',
-    bgClass: 'bg-coffee-dark text-white',
-    textClass: 'text-white/80',
-  },
-  {
-    id: 't-2',
-    name: 'Aurora',
-    rating: 5,
-    comment:
-      "Every time I walk into Coffeelo, I'm greeted with the comforting aroma of freshly ground beans and a warm smile from the staff. The attention to detail in their flat white is unmatched.",
-    avatarUrl:
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=300&auto=format&fit=crop',
-    bgClass: 'bg-white text-coffee-dark border border-coffee-beige',
-    textClass: 'text-coffee-brown',
-  },
-  {
-    id: 't-3',
-    name: 'Mijel',
-    rating: 5,
-    comment:
-      'The Caramel Macchiato and Ethiopian Cold Brew are easily the finest in town. Ordering online for express pickup on my commute to the office has been a total game changer!',
-    avatarUrl:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop',
-    bgClass: 'bg-[#EDE2D8] text-coffee-dark border border-coffee-beige/80',
-    textClass: 'text-coffee-dark/80',
-  },
+const GUEST_REVIEWS: GuestReview[] = [];
+
+const STAR_FILTERS: Array<{ value: number | 'all'; label: string }> = [
+  { value: 'all', label: 'Semua Bintang' },
+  { value: 5, label: 'Bintang 5' },
+  { value: 4, label: 'Bintang 4' },
+  { value: 3, label: 'Bintang 3' },
+  { value: 2, label: 'Bintang 2' },
+  { value: 1, label: 'Bintang 1' },
 ];
 
 export const TestimonialsSection: React.FC = () => {
+  const [selectedStar, setSelectedStar] = useState<number | 'all'>('all');
+
+  const filteredReviews =
+    selectedStar === 'all'
+      ? GUEST_REVIEWS
+      : GUEST_REVIEWS.filter((review) => review.rating === selectedStar);
+
   return (
     <section id="testimonials" className="py-14 lg:py-16 bg-coffee-cream border-t border-coffee-beige/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Top Header Row matching Image 4 */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-10">
+        {/* Header Row */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div className="space-y-1">
-            <span className="text-xs font-bold uppercase tracking-widest text-coffee-brown">
-              Testimonials
+            <span className="text-xs font-bold uppercase tracking-widest text-coffee-orange">
+              Ulasan Tamu
             </span>
-            <h2 className="text-4xl sm:text-5xl font-black text-coffee-dark tracking-tight">
-              What They Say
+            <h2 className="text-3xl sm:text-5xl font-black text-coffee-dark tracking-tight">
+              Apa Kata Pelanggan
             </h2>
           </div>
 
           <p className="text-sm text-coffee-brown font-medium max-w-sm md:text-right">
-            Hear what our lovely guests have to say about their daily coffee ritual at Coffeelo.
+            Saring ulasan berdasarkan penilaian bintang 1 sampai 5 dari pengalaman nyata pelanggan kami.
           </p>
         </div>
 
-        {/* Content Grid matching Image 4 */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          
-          {/* Left Column: Stacked Testimonial Cards */}
-          <div className="lg:col-span-6 flex flex-col justify-between space-y-4">
-            {TESTIMONIALS.map((t) => (
-              <div
-                key={t.id}
-                className={`p-6 sm:p-7 rounded-3xl shadow-sm transition-transform hover:-translate-y-1 duration-300 ${t.bgClass}`}
+        {/* Interactive Star Rating Filter Chips (1 - 5 Bintang) */}
+        <div
+          className="flex flex-wrap items-center gap-2.5 mb-8"
+          role="group"
+          aria-label="Filter ulasan berdasarkan rating bintang"
+        >
+          {STAR_FILTERS.map((filter) => {
+            const isActive = selectedStar === filter.value;
+            const count =
+              filter.value === 'all'
+                ? GUEST_REVIEWS.length
+                : GUEST_REVIEWS.filter((r) => r.rating === filter.value).length;
+
+            return (
+              <button
+                key={String(filter.value)}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => setSelectedStar(filter.value)}
+                className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-bold transition-colors cursor-pointer ${
+                  isActive
+                    ? 'bg-coffee-dark text-white shadow-card'
+                    : 'bg-white hover:bg-coffee-beige/50 text-coffee-dark border border-coffee-beige'
+                }`}
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h4 className="font-extrabold text-base tracking-tight">{t.name}</h4>
-                    <div className="flex items-center gap-1 mt-1 text-amber-400">
-                      {[...Array(t.rating)].map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
-                      ))}
-                    </div>
-                  </div>
-
-                  <img
-                    src={t.avatarUrl}
-                    alt={t.name}
-                    className="w-12 h-12 rounded-full object-cover border-2 border-white/30 shadow-sm"
+                {filter.value !== 'all' && (
+                  <Star
+                    aria-hidden="true"
+                    className={`w-3.5 h-3.5 ${
+                      isActive ? 'fill-amber-400 text-amber-400' : 'fill-amber-400 text-amber-500'
+                    }`}
                   />
-                </div>
+                )}
+                <span>{filter.label}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-extrabold ${
+                    isActive ? 'bg-white/20 text-white' : 'bg-coffee-cream text-coffee-brown'
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
-                <p className={`text-xs sm:text-sm leading-relaxed mt-2 ${t.textClass}`}>
-                  {t.comment}
+        {/* Review Grid or Empty State */}
+        {filteredReviews.length === 0 ? (
+          <div className="rounded-3xl bg-white/80 border border-coffee-beige p-8 sm:p-12 text-center shadow-subtle space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-coffee-cream border border-coffee-beige mx-auto flex items-center justify-center text-coffee-orange">
+              <MessageSquareDashed className="w-7 h-7" aria-hidden="true" />
+            </div>
+
+            <div className="space-y-1.5 max-w-md mx-auto">
+              <h3 className="text-lg font-black text-coffee-dark">
+                {selectedStar === 'all'
+                  ? 'Belum Ada Ulasan Tamu'
+                  : `Belum Ada Ulasan Bintang ${selectedStar}`}
+              </h3>
+              <p className="text-xs sm:text-sm text-coffee-brown leading-relaxed">
+                {selectedStar === 'all'
+                  ? 'Bagian ulasan tamu saat ini masih kosong. Jadilah pelanggan pertama yang mencicipi seduhan spesialti kami.'
+                  : `Saat ini belum terdapat ulasan pelanggan dengan penilaian ${selectedStar} bintang.`}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+              {selectedStar !== 'all' && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedStar('all')}
+                  className="px-5 py-2.5 rounded-full bg-coffee-cream hover:bg-coffee-beige text-coffee-dark border border-coffee-beige text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Tampilkan Semua Bintang
+                </button>
+              )}
+              <Link
+                to="/menu"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-coffee-orange hover:bg-coffee-dark text-white text-xs font-extrabold uppercase tracking-wider transition-colors shadow-sm"
+              >
+                <Coffee className="w-3.5 h-3.5" aria-hidden="true" />
+                Pesan Menu Sekarang
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredReviews.map((review) => (
+              <div
+                key={review.id}
+                className="p-6 rounded-3xl bg-white border border-coffee-beige shadow-subtle space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <h4 className="font-extrabold text-sm text-coffee-dark">{review.name}</h4>
+                  <div className="flex items-center gap-0.5 text-amber-400">
+                    {[...Array(review.rating)].map((_, idx) => (
+                      <Star key={idx} className="w-3.5 h-3.5 fill-amber-400" />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm text-coffee-brown leading-relaxed">
+                  {review.comment}
                 </p>
               </div>
             ))}
           </div>
-
-          {/* Right Column: High-Res Coffee Cup in Hands Photography */}
-          <div className="lg:col-span-6 relative rounded-4xl overflow-hidden min-h-[380px] lg:min-h-full border border-coffee-beige shadow-card">
-            <img
-              src="https://images.unsplash.com/photo-1511920170033-f8396924c348?q=80&w=900&auto=format&fit=crop"
-              alt="Coffeelo Cup held in warm hands"
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-            />
-            
-            {/* Subtle floating quote banner */}
-            <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8 bg-coffee-dark/85 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-white/20 text-white space-y-1">
-              <p className="text-xs font-bold uppercase tracking-wider text-coffee-beige">
-                Your perfect escape
-              </p>
-              <p className="text-sm font-medium text-white/90">
-                "Welcome home to genuine hospitality, specialty roasts, and quiet moments."
-              </p>
-            </div>
-          </div>
-
-        </div>
-
+        )}
       </div>
     </section>
   );

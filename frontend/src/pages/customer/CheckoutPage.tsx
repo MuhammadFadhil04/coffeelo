@@ -69,6 +69,8 @@ export default function CheckoutPage() {
     selectedStore,
     promoCode,
     promoDiscount,
+    taxPercentage,
+    loadStoreSettings,
     setFulfillmentType,
     setSelectedStore,
     getSubtotal,
@@ -78,6 +80,10 @@ export default function CheckoutPage() {
     getFinalTotal,
     clearCart,
   } = useCartStore();
+
+  useEffect(() => {
+    loadStoreSettings();
+  }, [loadStoreSettings]);
 
   const isOrderPlacedRef = useRef(false);
   const [paymentMethod, setPaymentMethod] = useState<CheckoutPaymentMethod>('QRIS');
@@ -208,7 +214,7 @@ export default function CheckoutPage() {
               Keranjang
             </Link>
             <ChevronRight size={14} />
-            <span className="text-[#451B0E] font-bold">Checkout & Pembayaran</span>
+            <span className="text-[#451B0E] font-bold">Konfirmasi & Pembayaran</span>
           </div>
           <h1 className="text-3xl font-black tracking-tight text-[#451B0E]">
             Konfirmasi & Metode Pembayaran
@@ -246,9 +252,9 @@ export default function CheckoutPage() {
                         fulfillmentType === 'PICKUP' ? 'text-[#B6370B]' : 'text-[#451B0E]'
                       }`}
                     >
-                      Express Pickup
+                      Ambil di Gerai
                     </div>
-                    <div className="text-xs text-[#71351D]/70">Ambil langsung di gerai (~15 menit)</div>
+                    <div className="text-xs text-[#71351D]/70">Ambil langsung di kedai (~15 menit)</div>
                   </div>
                 </button>
 
@@ -271,7 +277,7 @@ export default function CheckoutPage() {
                         fulfillmentType === 'DELIVERY' ? 'text-[#B6370B]' : 'text-[#451B0E]'
                       }`}
                     >
-                      Courier Delivery
+                      Antar Kurir
                     </div>
                     <div className="text-xs text-[#71351D]/70">Diantar kurir ke alamat Anda</div>
                   </div>
@@ -595,7 +601,7 @@ export default function CheckoutPage() {
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-[#71351D]/80">Pajak Restoran (10%)</span>
+                  <span className="text-[#71351D]/80">Pajak Restoran ({taxPercentage}%)</span>
                   <span className="text-[#451B0E] font-semibold">{formatCurrency(tax)}</span>
                 </div>
                 <div className="border-t border-[#E5D4C6] pt-3 flex justify-between items-baseline">

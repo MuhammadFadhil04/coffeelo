@@ -9,7 +9,7 @@ export const SettingsPage: React.FC = () => {
     storePhone: '',
     storeEmail: '',
     operatingHours: '',
-    deliveryFeeFlat: '3.50',
+    deliveryFeeFlat: '15000',
     taxPercentage: '10',
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -165,12 +165,12 @@ export const SettingsPage: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block mb-1.5">Ongkos Kirim Flat Delivery ($ USD)</label>
+                <label className="block mb-1.5">Ongkos Kirim Datar Delivery (Rp IDR)</label>
                 <input
                   type="number"
                   required
                   min="0"
-                  step="0.01"
+                  step="500"
                   value={settings.deliveryFeeFlat}
                   onChange={(e) => setSettings({ ...settings, deliveryFeeFlat: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-[#E5D4C6] bg-[#F4EDE5]/40 focus:outline-none focus:ring-1 focus:ring-[#B6370B]"

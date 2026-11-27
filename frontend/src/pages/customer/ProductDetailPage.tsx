@@ -15,6 +15,7 @@ import { Product } from '@/types';
 import { productService } from '@/services/productService';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
+import { formatCurrency } from '@/utils/currency';
 
 export const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -43,7 +44,6 @@ export const ProductDetailPage: React.FC = () => {
     productService.getProductBySlug(slug).then((prod) => {
       if (prod) {
         setProduct(prod);
-        // Default variants
         if (prod.variants) {
           const defaults: Record<string, string> = {};
           const seenGroups = new Set<string>();
@@ -66,7 +66,7 @@ export const ProductDetailPage: React.FC = () => {
       <div className="min-h-screen pt-32 pb-20 bg-coffee-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-coffee-orange border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs font-bold text-coffee-dark">Brewing product detail...</p>
+          <p className="text-xs font-bold text-coffee-dark">Menyiapkan detail produk...</p>
         </div>
       </div>
     );
@@ -78,22 +78,21 @@ export const ProductDetailPage: React.FC = () => {
         <div className="w-16 h-16 rounded-full bg-coffee-beige flex items-center justify-center text-coffee-brown">
           <Coffee className="w-8 h-8" />
         </div>
-        <h2 className="text-2xl font-extrabold text-coffee-dark">Product Not Found</h2>
+        <h2 className="text-2xl font-extrabold text-coffee-dark">Produk Tidak Ditemukan</h2>
         <p className="text-xs text-coffee-brown max-w-sm">
-          The specialty coffee you are looking for is currently unavailable or has been archived.
+          Kopi spesialti yang Anda cari saat ini belum tersedia atau telah diarsipkan.
         </p>
         <Link
           to="/menu"
           className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-coffee-orange text-white text-xs font-bold shadow-sm"
         >
           <ArrowLeft className="w-4 h-4" />
-          Browse Full Menu
+          Lihat Semua Menu
         </Link>
       </div>
     );
   }
 
-  // Group variants by name (e.g. "Size", "Milk Option")
   const variantGroups: Record<string, typeof product.variants> = {};
   if (product.variants) {
     for (const v of product.variants) {
@@ -102,7 +101,6 @@ export const ProductDetailPage: React.FC = () => {
     }
   }
 
-  // Calculate live dynamic price
   let currentUnitPrice = Number(product.basePrice);
   if (product.variants) {
     for (const [varName, varVal] of Object.entries(selectedVariants)) {
@@ -134,29 +132,34 @@ export const ProductDetailPage: React.FC = () => {
   return (
     <div className="pt-24 pb-24 bg-coffee-cream min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         {/* Breadcrumb Navigation */}
         <div className="mb-8">
           <button
+            type="button"
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-xs font-bold text-coffee-brown hover:text-coffee-dark transition mb-3"
+            className="inline-flex items-center gap-2 text-xs font-bold text-coffee-brown hover:text-coffee-dark transition mb-3 cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Back to previous
+            Kembali
           </button>
           <nav className="flex flex-wrap items-center gap-2 text-xs text-coffee-brown">
-            <Link to="/" className="hover:text-coffee-orange transition">Home</Link>
+            <Link to="/" className="hover:text-coffee-orange transition">
+              Beranda
+            </Link>
             <span>/</span>
-            <Link to="/menu" className="hover:text-coffee-orange transition">Menu</Link>
+            <Link to="/menu" className="hover:text-coffee-orange transition">
+              Menu
+            </Link>
             <span>/</span>
-            <span className="font-bold text-coffee-dark truncate max-w-[200px] sm:max-w-none">{product.name}</span>
+            <span className="font-bold text-coffee-dark truncate max-w-[200px] sm:max-w-none">
+              {product.name}
+            </span>
           </nav>
         </div>
 
         {/* Product Details Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          
-          {/* Left Column: Imagery & Technical Cupping Card */}
+          {/* Left Column */}
           <div className="lg:col-span-6 space-y-6">
             <div className="relative aspect-[4/3] rounded-4xl overflow-hidden bg-white p-6 border border-coffee-beige shadow-card flex items-center justify-center">
               <img
@@ -167,46 +170,45 @@ export const ProductDetailPage: React.FC = () => {
               {product.scaScore && (
                 <div className="absolute top-6 left-6 px-3.5 py-1.5 rounded-full bg-coffee-dark/90 backdrop-blur-md text-white text-xs font-extrabold flex items-center gap-1.5 shadow-md">
                   <Award className="w-4 h-4 text-coffee-orange" />
-                  SCA Score: {product.scaScore}
+                  Skor SCA: {product.scaScore}
                 </div>
               )}
             </div>
 
-            {/* Specialty Origin & Terroir Card */}
             <div className="bg-white rounded-3xl p-6 border border-coffee-beige shadow-subtle space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-coffee-beige/60">
-                <h4 className="font-extrabold text-sm text-coffee-dark">Origin & Processing</h4>
+                <h4 className="font-extrabold text-sm text-coffee-dark">Asal & Pemrosesan Biji</h4>
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-xs">
                 {product.origin && (
                   <div>
-                    <span className="text-coffee-brown block text-[11px] font-semibold">Origin / Region:</span>
+                    <span className="text-coffee-brown block text-[11px] font-semibold">Daerah Asal:</span>
                     <span className="font-bold text-coffee-dark">{product.origin}</span>
                   </div>
                 )}
                 {product.altitude && (
                   <div>
-                    <span className="text-coffee-brown block text-[11px] font-semibold">Elevation:</span>
+                    <span className="text-coffee-brown block text-[11px] font-semibold">Ketinggian:</span>
                     <span className="font-bold text-coffee-dark">{product.altitude}</span>
                   </div>
                 )}
                 {product.process && (
                   <div>
-                    <span className="text-coffee-brown block text-[11px] font-semibold">Process:</span>
+                    <span className="text-coffee-brown block text-[11px] font-semibold">Proses:</span>
                     <span className="font-bold text-coffee-dark">{product.process}</span>
                   </div>
                 )}
                 {product.roastLevel && (
                   <div>
-                    <span className="text-coffee-brown block text-[11px] font-semibold">Roast Profile:</span>
+                    <span className="text-coffee-brown block text-[11px] font-semibold">Profil Sangrai:</span>
                     <span className="font-bold text-coffee-dark">{product.roastLevel}</span>
                   </div>
                 )}
                 {product.nutrition && (
                   <div>
-                    <span className="text-coffee-brown block text-[11px] font-semibold">Caffeine Content:</span>
+                    <span className="text-coffee-brown block text-[11px] font-semibold">Kadar Kafein:</span>
                     <span className="font-bold text-coffee-dark">{product.nutrition.caffeine}</span>
                   </div>
                 )}
@@ -214,19 +216,17 @@ export const ProductDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column: Customization & Add to Cart */}
+          {/* Right Column */}
           <div className="lg:col-span-6 bg-white rounded-4xl p-6 sm:p-10 border border-coffee-beige shadow-card space-y-6">
-            
-            {/* Header info */}
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-coffee-beige text-coffee-dark">
-                  Specialty Lineup
+                  Menu Spesialti
                 </span>
                 {product.rating && (
                   <span className="flex items-center gap-1 text-xs font-bold text-coffee-dark">
                     <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    {product.rating} ({product.reviewsCount} customer reviews)
+                    {product.rating} ({product.reviewsCount} ulasan pelanggan)
                   </span>
                 )}
               </div>
@@ -235,28 +235,24 @@ export const ProductDetailPage: React.FC = () => {
                 {product.name}
               </h1>
 
-              {/* Live Price Display */}
               <div className="flex items-baseline gap-3 pt-1">
                 <span className="text-3xl font-black text-coffee-orange">
-                  ${(currentUnitPrice * quantity).toFixed(2)}
+                  {formatCurrency(currentUnitPrice * quantity)}
                 </span>
                 {quantity > 1 && (
                   <span className="text-xs font-semibold text-coffee-brown">
-                    (${currentUnitPrice.toFixed(2)} each)
+                    ({formatCurrency(currentUnitPrice)} per item)
                   </span>
                 )}
               </div>
             </div>
 
-            <p className="text-sm text-coffee-brown leading-relaxed">
-              {product.description}
-            </p>
+            <p className="text-sm text-coffee-brown leading-relaxed">{product.description}</p>
 
-            {/* Tasting Notes */}
             {product.tastingNotes && product.tastingNotes.length > 0 && (
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-coffee-dark">
-                  Sensory Notes:
+                  Catatan Rasa:
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {product.tastingNotes.map((note, idx) => (
@@ -271,13 +267,12 @@ export const ProductDetailPage: React.FC = () => {
               </div>
             )}
 
-            {/* Variant Selectors */}
             <div className="space-y-5 pt-3 border-t border-coffee-beige/60">
               {Object.entries(variantGroups).map(([groupName, options]) => (
                 <div key={groupName} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase tracking-wider text-coffee-dark">
-                      Select {groupName}:
+                      Pilih {groupName}:
                     </span>
                     <span className="text-xs text-coffee-orange font-semibold">
                       {selectedVariants[groupName]}
@@ -292,7 +287,7 @@ export const ProductDetailPage: React.FC = () => {
                           key={opt.id}
                           type="button"
                           onClick={() => handleVariantChange(groupName, opt.optionValue)}
-                          className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                          className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
                             isSelected
                               ? 'bg-coffee-dark text-white shadow-card scale-105'
                               : 'bg-coffee-cream/80 hover:bg-coffee-beige text-coffee-dark border border-coffee-beige'
@@ -301,7 +296,7 @@ export const ProductDetailPage: React.FC = () => {
                           {opt.optionValue}
                           {Number(opt.priceAdjustment) > 0 && (
                             <span className="ml-1 text-coffee-orange font-extrabold text-[11px]">
-                              (+${Number(opt.priceAdjustment).toFixed(2)})
+                              (+{formatCurrency(Number(opt.priceAdjustment))})
                             </span>
                           )}
                         </button>
@@ -312,27 +307,26 @@ export const ProductDetailPage: React.FC = () => {
               ))}
             </div>
 
-            {/* Special Instructions Notes */}
             <div className="space-y-2 pt-2">
               <label className="text-xs font-bold uppercase tracking-wider text-coffee-dark">
-                Special Barista Instructions:
+                Catatan Khusus Barista:
               </label>
               <textarea
                 rows={2}
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
-                placeholder="e.g. Extra hot, separate ice, oat milk foam..."
+                placeholder="Contoh: Lebih panas, es terpisah, kurangi gula..."
                 className="w-full p-3 text-xs rounded-2xl bg-coffee-cream/40 border border-coffee-beige text-coffee-dark placeholder-coffee-brown/60 focus:outline-none focus:ring-2 focus:ring-coffee-orange/40"
               />
             </div>
 
-            {/* Quantity Adjuster & Add to Basket Button */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4 border-t border-coffee-beige/60">
-              {/* Quantity */}
               <div className="flex items-center justify-between sm:justify-center gap-3 border border-coffee-beige rounded-full px-4 py-3 bg-coffee-cream/40">
                 <button
+                  type="button"
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="p-1 hover:text-coffee-orange transition text-coffee-dark"
+                  aria-label="Kurangi jumlah"
+                  className="p-1 hover:text-coffee-orange transition text-coffee-dark cursor-pointer"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
@@ -340,17 +334,19 @@ export const ProductDetailPage: React.FC = () => {
                   {quantity}
                 </span>
                 <button
+                  type="button"
                   onClick={() => setQuantity((q) => q + 1)}
-                  className="p-1 hover:text-coffee-orange transition text-coffee-dark"
+                  aria-label="Tambah jumlah"
+                  className="p-1 hover:text-coffee-orange transition text-coffee-dark cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Add to Basket CTA */}
               <button
+                type="button"
                 onClick={handleAddToCart}
-                className={`w-full sm:flex-1 py-4 rounded-full font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-card hover:shadow-elevation active:scale-95 ${
+                className={`w-full sm:flex-1 py-4 rounded-full font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-card hover:shadow-elevation active:scale-95 cursor-pointer ${
                   isAdded
                     ? 'bg-emerald-600 text-white'
                     : 'bg-coffee-orange hover:bg-coffee-orange/95 text-white'
@@ -359,30 +355,28 @@ export const ProductDetailPage: React.FC = () => {
                 {isAdded ? (
                   <>
                     <Check className="w-4 h-4" />
-                    Added to Basket!
+                    Ditambahkan ke Keranjang!
                   </>
                 ) : (
                   <>
                     <ShoppingBag className="w-4 h-4" />
-                    Add to Basket — ${(currentUnitPrice * quantity).toFixed(2)}
+                    Tambah ke Keranjang — {formatCurrency(currentUnitPrice * quantity)}
                   </>
                 )}
               </button>
             </div>
-
           </div>
-
         </div>
 
-        {/* You May Also Like Section */}
+        {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <div className="mt-24 pt-12 border-t border-coffee-beige/60 space-y-8">
+          <div className="mt-20 pt-10 border-t border-coffee-beige/60 space-y-8">
             <div className="text-center space-y-1">
               <span className="text-xs font-bold uppercase tracking-widest text-coffee-orange">
-                Perfect Pairings
+                Rekomendasi Serupa
               </span>
               <h3 className="text-3xl font-black text-coffee-dark tracking-tight">
-                You May Also Like
+                Mungkin Anda Juga Suka
               </h3>
             </div>
 
@@ -404,14 +398,13 @@ export const ProductDetailPage: React.FC = () => {
                     {rel.name}
                   </h4>
                   <p className="text-sm font-black text-coffee-orange mt-1">
-                    ${rel.basePrice.toFixed(2)}
+                    {formatCurrency(rel.basePrice)}
                   </p>
                 </Link>
               ))}
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

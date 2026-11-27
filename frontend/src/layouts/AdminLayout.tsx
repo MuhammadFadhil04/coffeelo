@@ -33,7 +33,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     section: 'Menu Utama',
     items: [
-      { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+      { name: 'Dasbor', path: '/admin/dashboard', icon: LayoutDashboard },
       { name: 'Pesanan', path: '/admin/orders', icon: ShoppingBag },
       { name: 'Laporan', path: '/admin/reports', icon: BarChart3 },
     ],
@@ -174,7 +174,7 @@ export const AdminLayout: React.FC = () => {
                 Coffeelo
               </span>
               <span className="inline-block mt-1 text-[9px] tracking-widest text-[#B6370B] uppercase font-bold bg-[#B6370B]/15 px-2 py-0.5 rounded-full border border-[#B6370B]/30">
-                Admin Portal
+                Portal Admin
               </span>
             </div>
           </Link>
@@ -321,7 +321,7 @@ export const AdminLayout: React.FC = () => {
               className="px-3.5 py-2 rounded-xl bg-[#451B0E] hover:bg-[#71351D] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
             >
               <ExternalLink className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Storefront</span>
+              <span className="hidden sm:inline">Toko Pelanggan</span>
             </Link>
           </div>
         </header>

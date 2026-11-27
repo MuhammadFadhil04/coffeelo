@@ -178,23 +178,63 @@ export class ProductService {
       }
     }
 
-    return await prisma.product.update({
-      where: { id },
-      data: {
-        categoryId: data.categoryId,
-        name: data.name?.trim(),
-        slug,
-        description: data.description?.trim(),
-        basePrice: data.basePrice !== undefined ? new Prisma.Decimal(data.basePrice) : undefined,
-        imageUrl: data.imageUrl,
-        stock: data.stock,
-        isAvailable: data.isAvailable,
-        isFeatured: data.isFeatured,
-      },
-      include: {
-        category: true,
-        variants: true,
-      },
+    return await prisma.$transaction(async (tx) => {
+      if (data.variants !== undefined) {
+        const keepIds = data.variants
+          .map((v) => v.id)
+          .filter((vid): vid is string => Boolean(vid));
+
+        await tx.productVariant.deleteMany({
+          where: {
+            productId: id,
+            ...(keepIds.length > 0 ? { id: { notIn: keepIds } } : {}),
+          },
+        });
+
+        for (const v of data.variants) {
+          const variantPayload = {
+            name: v.name.trim(),
+            optionValue: v.optionValue.trim(),
+            priceAdjustment: new Prisma.Decimal(v.priceAdjustment ?? 0),
+            stock: v.stock ?? 50,
+          };
+
+          if (v.id) {
+            const updated = await tx.productVariant.updateMany({
+              where: { id: v.id, productId: id },
+              data: variantPayload,
+            });
+            if (updated.count === 0) {
+              await tx.productVariant.create({
+                data: { productId: id, ...variantPayload },
+              });
+            }
+          } else {
+            await tx.productVariant.create({
+              data: { productId: id, ...variantPayload },
+            });
+          }
+        }
+      }
+
+      return await tx.product.update({
+        where: { id },
+        data: {
+          categoryId: data.categoryId,
+          name: data.name?.trim(),
+          slug,
+          description: data.description?.trim(),
+          basePrice: data.basePrice !== undefined ? new Prisma.Decimal(data.basePrice) : undefined,
+          imageUrl: data.imageUrl,
+          stock: data.stock,
+          isAvailable: data.isAvailable,
+          isFeatured: data.isFeatured,
+        },
+        include: {
+          category: true,
+          variants: true,
+        },
+      });
     });
   }
 

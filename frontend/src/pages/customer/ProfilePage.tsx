@@ -74,7 +74,7 @@ export const ProfilePage: React.FC = () => {
               className="px-4 py-2 rounded-xl bg-[#451B0E] hover:bg-[#71351D] text-white text-xs font-bold transition flex items-center gap-1.5 shadow"
             >
               <Shield className="w-4 h-4 text-[#B6370B]" />
-              Admin Portal
+              Portal Admin
             </Link>
           )}
           <button

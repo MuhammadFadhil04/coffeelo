@@ -3,6 +3,7 @@ import { X, ShoppingBag, Check, Plus, Minus, Star } from 'lucide-react';
 import { Product } from '@/types';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
+import { formatCurrency } from '@/utils/currency';
 
 interface QuickViewModalProps {
   product: Product | null;
@@ -25,7 +26,6 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
     };
   }, []);
 
-  // Group variants by name (e.g. "Size", "Milk Option")
   const variantGroups = React.useMemo(() => {
     if (!product?.variants) return {};
     const groups: Record<string, typeof product.variants> = {};
@@ -36,7 +36,6 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
     return groups;
   }, [product]);
 
-  // Set default variants when product changes
   useEffect(() => {
     if (product && product.variants) {
       const defaults: Record<string, string> = {};
@@ -54,7 +53,6 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
 
   if (!isOpen || !product) return null;
 
-  // Calculate dynamic unit price
   let currentUnitPrice = Number(product.basePrice);
   if (product.variants) {
     for (const [varName, varVal] of Object.entries(selectedVariants)) {
@@ -87,7 +85,6 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-coffee-dark/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
@@ -95,18 +92,16 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
 
       <div className="min-h-full flex items-center justify-center p-4">
         <div className="relative bg-white w-full max-w-2xl rounded-4xl border border-coffee-beige shadow-2xl overflow-hidden p-5 sm:p-8 animate-scaleIn">
-          
-          {/* Close button */}
           <button
+            type="button"
             onClick={onClose}
-            aria-label="Close modal"
-            className="absolute top-4 right-4 sm:top-5 sm:right-5 z-10 p-2 rounded-full bg-coffee-cream text-coffee-dark hover:bg-coffee-beige transition"
+            aria-label="Tutup pratinjau produk"
+            className="absolute top-4 right-4 sm:top-5 sm:right-5 z-10 p-2 rounded-full bg-coffee-cream text-coffee-dark hover:bg-coffee-beige transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-            
             {/* Left: Product Image & Badges */}
             <div className="md:col-span-5 space-y-4">
               <div className="aspect-square rounded-3xl overflow-hidden bg-coffee-cream/40 p-4 border border-coffee-beige/60 flex items-center justify-center">
@@ -120,7 +115,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
               {product.tastingNotes && product.tastingNotes.length > 0 && (
                 <div className="space-y-1.5">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-coffee-brown">
-                    Tasting Notes:
+                    Catatan Rasa:
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {product.tastingNotes.map((note, i) => (
@@ -141,7 +136,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-coffee-beige text-coffee-dark">
-                    Specialty Coffee
+                    Kopi Spesialti
                   </span>
                   {product.rating && (
                     <span className="flex items-center gap-1 text-xs font-bold text-coffee-dark">
@@ -155,10 +150,10 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
                   {product.name}
                 </h3>
                 <p className="text-xl font-extrabold text-coffee-orange mt-1">
-                  ${(currentUnitPrice * quantity).toFixed(2)}
+                  {formatCurrency(currentUnitPrice * quantity)}
                   {quantity > 1 && (
                     <span className="text-xs text-coffee-brown font-normal ml-2">
-                      (${currentUnitPrice.toFixed(2)} each)
+                      ({formatCurrency(currentUnitPrice)} per item)
                     </span>
                   )}
                 </p>
@@ -183,7 +178,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
                             key={opt.id}
                             type="button"
                             onClick={() => handleVariantChange(groupName, opt.optionValue)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                               isSelected
                                 ? 'bg-coffee-dark text-white shadow-sm'
                                 : 'bg-coffee-cream hover:bg-coffee-beige/70 text-coffee-dark border border-coffee-beige/60'
@@ -192,7 +187,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
                             {opt.optionValue}
                             {Number(opt.priceAdjustment) > 0 && (
                               <span className="ml-1 text-[10px] text-coffee-orange font-bold">
-                                (+${Number(opt.priceAdjustment).toFixed(2)})
+                                (+{formatCurrency(Number(opt.priceAdjustment))})
                               </span>
                             )}
                           </button>
@@ -206,13 +201,13 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
               {/* Special Instructions */}
               <div className="space-y-1">
                 <label className="text-[11px] font-bold text-coffee-dark uppercase tracking-wider">
-                  Special Notes / Request:
+                  Catatan Khusus Barista:
                 </label>
                 <input
                   type="text"
                   value={instructions}
                   onChange={(e) => setInstructions(e.target.value)}
-                  placeholder="e.g. Extra hot, separate ice, no straw"
+                  placeholder="Contoh: Lebih panas, pisah es, sedikit gula"
                   className="w-full px-3 py-2 text-xs rounded-xl bg-coffee-cream/40 border border-coffee-beige focus:outline-none focus:ring-1 focus:ring-coffee-orange text-coffee-dark"
                 />
               </div>
@@ -221,8 +216,10 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2">
                 <div className="flex items-center justify-between sm:justify-center gap-3 border border-coffee-beige rounded-full px-4 py-2 sm:px-3 sm:py-1.5 bg-coffee-cream/40">
                   <button
+                    type="button"
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="p-1 hover:text-coffee-orange transition text-coffee-dark"
+                    aria-label="Kurangi jumlah"
+                    className="p-1 hover:text-coffee-orange transition text-coffee-dark cursor-pointer"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
@@ -230,16 +227,19 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
                     {quantity}
                   </span>
                   <button
+                    type="button"
                     onClick={() => setQuantity((q) => q + 1)}
-                    className="p-1 hover:text-coffee-orange transition text-coffee-dark"
+                    aria-label="Tambah jumlah"
+                    className="p-1 hover:text-coffee-orange transition text-coffee-dark cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
                 <button
+                  type="button"
                   onClick={handleAddToCart}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-card ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-card cursor-pointer ${
                     isAdded
                       ? 'bg-emerald-600 text-white'
                       : 'bg-coffee-orange hover:bg-coffee-orange/90 text-white active:scale-95'
@@ -248,21 +248,18 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
                   {isAdded ? (
                     <>
                       <Check className="w-4 h-4" />
-                      Added!
+                      Ditambahkan!
                     </>
                   ) : (
                     <>
                       <ShoppingBag className="w-4 h-4" />
-                      Add to Basket — ${(currentUnitPrice * quantity).toFixed(2)}
+                      Tambah ke Keranjang — {formatCurrency(currentUnitPrice * quantity)}
                     </>
                   )}
                 </button>
               </div>
-
             </div>
-
           </div>
-
         </div>
       </div>
     </div>

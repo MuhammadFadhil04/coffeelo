@@ -4,10 +4,10 @@ import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 
 const CRAFT_SPECS = [
-  { label: 'Bold Espresso', detail: 'Double Ristretto Shot' },
-  { label: 'Cold Filtered', detail: 'Triple Crystal Ice' },
-  { label: 'Velvety Milk', detail: 'Artisan Oat & Dairy' },
-  { label: 'Single Origin', detail: '100% Ethiopian Arabica' },
+  { label: 'Espresso Pekat', detail: 'Ekstraksi Ristretto Ganda' },
+  { label: 'Saring Dingin', detail: 'Es Kristal Tiga Kali Saring' },
+  { label: 'Susu Lembut', detail: 'Oat Artisan & Susu Segar' },
+  { label: 'Asal Tunggal', detail: '100% Arabika Ethiopia' },
 ];
 
 export const HeroSection: React.FC = () => {
@@ -101,7 +101,7 @@ export const HeroSection: React.FC = () => {
   return (
     <section
       ref={heroRef}
-      className="relative isolate overflow-hidden pt-24 pb-10 sm:pt-28 sm:pb-14 bg-coffee-cream border-b border-coffee-beige/70"
+      className="relative isolate overflow-hidden pt-24 pb-10 sm:pt-28 sm:pb-12 bg-coffee-cream border-b border-coffee-beige/70"
     >
       {/* Subtle Ambient Architectural Accents */}
       <div
@@ -117,20 +117,13 @@ export const HeroSection: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
           {/* Left Editorial Column: Clear Typography & Conversion CTAs */}
           <div className="lg:col-span-6 space-y-5 text-left">
-            <div className="hero-animate-item inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/85 border border-coffee-beige shadow-subtle">
-              <span className="w-2 h-2 rounded-full bg-coffee-orange animate-pulse motion-reduce:animate-none" />
-              <span className="text-[11px] font-extrabold uppercase tracking-widest text-coffee-dark">
-                Chilled Bold Energy • Roastery Bar
-              </span>
-            </div>
-
             <h1 className="hero-animate-item text-4xl sm:text-5xl xl:text-6xl font-black text-coffee-dark tracking-tight leading-[1.06]">
-              Crafted Cold,{' '}
-              <span className="text-coffee-orange">Roasted Fresh</span> for Every Ritual.
+              Diseduh Dingin,{' '}
+              <span className="text-coffee-orange">Disangrai Segar</span> untuk Setiap Momen.
             </h1>
 
             <p className="hero-animate-item text-sm sm:text-base text-coffee-brown leading-relaxed max-w-xl font-medium">
-              Smooth, strong, and made to refresh. Nikmati seduhan cold brew & signature espresso dari biji single-origin Ethiopia Yirgacheffe dengan micro-foam lembut setiap hari.
+              Halus, pekat, dan menyegarkan. Nikmati seduhan kopi dingin dan espresso khas dari biji asal tunggal Ethiopia Yirgacheffe dengan busa susu lembut setiap hari.
             </p>
 
             {/* Primary & Secondary Actions */}
@@ -140,7 +133,7 @@ export const HeroSection: React.FC = () => {
                 onClick={() => scrollToSection('collection')}
                 className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-coffee-orange hover:bg-coffee-dark text-white font-extrabold text-xs uppercase tracking-wider transition-colors shadow-card cursor-pointer"
               >
-                Order Now
+                Pesan Sekarang
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -149,12 +142,12 @@ export const HeroSection: React.FC = () => {
                 className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-white hover:bg-coffee-beige/60 text-coffee-dark border border-coffee-beige font-extrabold text-xs uppercase tracking-wider transition-colors shadow-subtle"
               >
                 <Coffee className="w-4 h-4 text-coffee-orange" />
-                Explore Full Menu
+                Lihat Menu Lengkap
               </Link>
             </div>
           </div>
 
-          {/* Right Visual Column: Clean Framed Coffee Showcase (zero overlapping text behind image) */}
+          {/* Right Visual Column */}
           <div className="lg:col-span-6 relative flex flex-col items-center justify-center">
             <div
               ref={cupWrapRef}
@@ -198,7 +191,7 @@ export const HeroSection: React.FC = () => {
               <div className="relative z-10 w-[240px] h-[240px] sm:w-[330px] sm:h-[330px] md:w-[360px] md:h-[360px] rounded-full p-2.5 bg-white/80 backdrop-blur-sm border border-coffee-beige shadow-elevation">
                 <img
                   src="https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?q=80&w=900&auto=format&fit=crop"
-                  alt="Coffeelo Signature Iced Latte"
+                  alt="Kopi Susu Dingin Spesialti Coffeelo"
                   className="w-full h-full object-cover rounded-full"
                 />
 
@@ -207,9 +200,9 @@ export const HeroSection: React.FC = () => {
                   <Sparkles className="w-3.5 h-3.5 text-coffee-orange shrink-0" />
                   <div className="text-left">
                     <p className="text-[10px] uppercase tracking-wider text-coffee-beige font-bold leading-none">
-                      Signature Cup
+                      Racikan Utama
                     </p>
-                    <p className="text-xs font-extrabold leading-tight mt-0.5">Iced Velvet Latte</p>
+                    <p className="text-xs font-extrabold leading-tight mt-0.5">Kopi Susu Dingin</p>
                   </div>
                 </div>
 
@@ -218,9 +211,9 @@ export const HeroSection: React.FC = () => {
                   <Leaf className="w-4 h-4 text-coffee-orange shrink-0" />
                   <div className="text-left">
                     <p className="text-[10px] uppercase tracking-wider text-coffee-brown font-bold leading-none">
-                      Roast Batch
+                      Batch Sangrai
                     </p>
-                    <p className="text-xs font-extrabold leading-tight mt-0.5">Crafted Fresh Daily</p>
+                    <p className="text-xs font-extrabold leading-tight mt-0.5">Diracik Segar Harian</p>
                   </div>
                 </div>
               </div>
@@ -235,24 +228,24 @@ export const HeroSection: React.FC = () => {
             <div className="h-full rounded-2xl bg-white/85 border border-coffee-beige/80 px-4 py-3 shadow-subtle flex flex-col justify-center">
               <p className="text-lg sm:text-xl font-black text-coffee-dark leading-none">88+ SCA</p>
               <p className="text-[11px] font-semibold text-coffee-brown mt-1.5 leading-tight">
-                Specialty Grade
+                Kualitas Spesialti
               </p>
             </div>
             <div className="h-full rounded-2xl bg-white/85 border border-coffee-beige/80 px-4 py-3 shadow-subtle flex flex-col justify-center">
               <p className="text-lg sm:text-xl font-black text-coffee-dark leading-none">100%</p>
               <p className="text-[11px] font-semibold text-coffee-brown mt-1.5 leading-tight">
-                Ethiopian Arabica
+                Arabika Ethiopia
               </p>
             </div>
             <div className="col-span-2 sm:col-span-1 h-full rounded-2xl bg-white/85 border border-coffee-beige/80 px-4 py-3 shadow-subtle flex flex-col justify-center">
-              <p className="text-lg sm:text-xl font-black text-coffee-orange leading-none">~15 Min</p>
+              <p className="text-lg sm:text-xl font-black text-coffee-orange leading-none">~15 Menit</p>
               <p className="text-[11px] font-semibold text-coffee-brown mt-1.5 leading-tight">
-                Express Pickup
+                Ambil Cepat
               </p>
             </div>
           </div>
 
-          {/* Right 4 Craft & Ingredient Spec Cards — Locked to exact same row & height */}
+          {/* Right 4 Craft & Ingredient Spec Cards */}
           <div className="lg:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-2.5 items-stretch">
             {CRAFT_SPECS.map((spec) => (
               <div
@@ -269,14 +262,14 @@ export const HeroSection: React.FC = () => {
         </div>
 
         {/* Bottom Roastery Value Strip */}
-        <div className="mt-10 pt-6 border-t border-coffee-beige/80 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+        <div className="mt-8 pt-6 border-t border-coffee-beige/80 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-coffee-dark text-coffee-cream flex items-center justify-center shrink-0">
               <Award className="w-4 h-4 text-coffee-orange" />
             </div>
             <div>
-              <p className="font-extrabold text-coffee-dark">Direct Trade Micro-Lots</p>
-              <p className="text-coffee-brown text-[11px]">Biji kopi terpilih dari Ethiopia, Gayo & Kintamani</p>
+              <p className="font-extrabold text-coffee-dark">Kemitraan Petani Langsung</p>
+              <p className="text-coffee-brown text-[11px]">Biji kopi terpilih dari Ethiopia, Gayo, dan Kintamani</p>
             </div>
           </div>
 
@@ -285,8 +278,8 @@ export const HeroSection: React.FC = () => {
               <Flame className="w-4 h-4 text-coffee-orange" />
             </div>
             <div>
-              <p className="font-extrabold text-coffee-dark">Small-Batch Precision Roast</p>
-              <p className="text-coffee-brown text-[11px]">Disangrai segar setiap minggu untuk aroma puncak</p>
+              <p className="font-extrabold text-coffee-dark">Sangrai Presisi Skala Kecil</p>
+              <p className="text-coffee-brown text-[11px]">Disangrai segar setiap minggu untuk aroma terbaik</p>
             </div>
           </div>
 
@@ -295,8 +288,8 @@ export const HeroSection: React.FC = () => {
               <Clock className="w-4 h-4 text-coffee-orange" />
             </div>
             <div>
-              <p className="font-extrabold text-coffee-dark">Skip the Queue Online</p>
-              <p className="text-coffee-brown text-[11px]">Pesan via web untuk Express Pickup atau Delivery</p>
+              <p className="font-extrabold text-coffee-dark">Pesan Tanpa Antre</p>
+              <p className="text-coffee-brown text-[11px]">Pesan online untuk ambil di gerai atau antar kurir</p>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Link } from 'react-router-dom';
+import { formatCurrency } from '@/utils/currency';
 
 export const CartDrawer: React.FC = () => {
   const { items, isCartOpen, setIsCartOpen, updateQuantity, removeItem, getTotalPrice, getTotalCount } = useCartStore();
@@ -24,14 +25,16 @@ export const CartDrawer: React.FC = () => {
           <div className="flex items-center justify-between px-4 sm:px-6 py-5 border-b border-coffee-beige bg-white/60">
             <div className="flex items-center gap-2.5">
               <ShoppingBag className="w-5 h-5 text-coffee-orange" />
-              <h2 className="text-lg font-bold text-coffee-dark">Your Basket</h2>
+              <h2 className="text-lg font-bold text-coffee-dark">Keranjang Anda</h2>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-coffee-beige text-coffee-dark">
                 {getTotalCount()}
               </span>
             </div>
             <button
+              type="button"
               onClick={() => setIsCartOpen(false)}
-              className="p-1.5 rounded-full hover:bg-coffee-beige/60 text-coffee-brown transition"
+              aria-label="Tutup keranjang"
+              className="p-1.5 rounded-full hover:bg-coffee-beige/60 text-coffee-brown transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -45,16 +48,17 @@ export const CartDrawer: React.FC = () => {
                   <ShoppingBag className="w-8 h-8 opacity-60" />
                 </div>
                 <div className="space-y-1">
-                  <p className="font-bold text-coffee-dark">Your basket is empty</p>
+                  <p className="font-bold text-coffee-dark">Keranjang Anda masih kosong</p>
                   <p className="text-xs text-coffee-brown max-w-xs">
-                    Explore our curated specialty coffees and add your favorites to get started.
+                    Jelajahi menu kopi spesialti pilihan kami dan tambahkan minuman favorit Anda.
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setIsCartOpen(false)}
-                  className="px-5 py-2.5 rounded-full bg-coffee-orange text-white text-xs font-bold hover:bg-coffee-orange/90 transition shadow-sm"
+                  className="px-5 py-2.5 rounded-full bg-coffee-orange text-white text-xs font-bold hover:bg-coffee-orange/90 transition shadow-sm cursor-pointer"
                 >
-                  Explore Menu
+                  Jelajahi Menu
                 </button>
               </div>
             ) : (
@@ -72,8 +76,10 @@ export const CartDrawer: React.FC = () => {
                     <div className="flex items-start justify-between">
                       <h4 className="font-bold text-sm text-coffee-dark truncate">{item.product.name}</h4>
                       <button
+                        type="button"
                         onClick={() => removeItem(item.id)}
-                        className="text-coffee-brown/50 hover:text-rose-600 transition ml-2"
+                        aria-label="Hapus item"
+                        className="text-coffee-brown/50 hover:text-rose-600 transition ml-2 cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -89,14 +95,15 @@ export const CartDrawer: React.FC = () => {
 
                     <div className="flex items-center justify-between mt-3">
                       <span className="font-bold text-sm text-coffee-orange">
-                        ${item.unitPrice.toFixed(2)}
+                        {formatCurrency(item.unitPrice)}
                       </span>
 
-                      {/* Quantity controls */}
                       <div className="flex items-center gap-2 border border-coffee-beige rounded-full px-2 py-0.5 bg-coffee-cream/30">
                         <button
+                          type="button"
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="text-coffee-dark hover:text-coffee-orange transition"
+                          aria-label="Kurangi jumlah"
+                          className="text-coffee-dark hover:text-coffee-orange transition cursor-pointer"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
@@ -104,8 +111,10 @@ export const CartDrawer: React.FC = () => {
                           {item.quantity}
                         </span>
                         <button
+                          type="button"
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="text-coffee-dark hover:text-coffee-orange transition"
+                          aria-label="Tambah jumlah"
+                          className="text-coffee-dark hover:text-coffee-orange transition cursor-pointer"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
@@ -123,15 +132,15 @@ export const CartDrawer: React.FC = () => {
               <div className="space-y-1.5 text-sm">
                 <div className="flex justify-between text-coffee-brown text-xs">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-coffee-dark">${getTotalPrice().toFixed(2)}</span>
+                  <span className="font-semibold text-coffee-dark">{formatCurrency(getTotalPrice())}</span>
                 </div>
                 <div className="flex justify-between text-coffee-brown text-xs">
-                  <span>Estimated Tax</span>
-                  <span className="font-semibold text-coffee-dark">$0.00</span>
+                  <span>Estimasi Pajak</span>
+                  <span className="font-semibold text-coffee-dark">{formatCurrency(0)}</span>
                 </div>
                 <div className="flex justify-between text-coffee-dark font-extrabold text-base pt-2 border-t border-coffee-beige">
                   <span>Total</span>
-                  <span className="text-coffee-orange">${getTotalPrice().toFixed(2)}</span>
+                  <span className="text-coffee-orange">{formatCurrency(getTotalPrice())}</span>
                 </div>
               </div>
 
@@ -141,7 +150,7 @@ export const CartDrawer: React.FC = () => {
                   onClick={() => setIsCartOpen(false)}
                   className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-coffee-orange hover:bg-coffee-orange/95 text-white font-bold text-sm transition shadow-card"
                 >
-                  Proceed to Checkout
+                  Lanjut ke Pembayaran
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               ) : (
@@ -151,7 +160,7 @@ export const CartDrawer: React.FC = () => {
                     onClick={() => setIsCartOpen(false)}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-coffee-orange hover:bg-coffee-orange/95 text-white font-bold text-xs uppercase tracking-wider transition shadow-card"
                   >
-                    Masuk untuk Checkout
+                    Masuk untuk Lanjut Pesan
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                   <Link

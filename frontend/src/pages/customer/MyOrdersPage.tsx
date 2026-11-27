@@ -247,12 +247,12 @@ export default function MyOrdersPage() {
                             {order.fulfillmentType === 'PICKUP' ? (
                               <>
                                 <Store size={12} className="text-[#B6370B]" />
-                                Pickup
+                                Ambil di Gerai
                               </>
                             ) : (
                               <>
                                 <Truck size={12} className="text-[#B6370B]" />
-                                Delivery
+                                Antar Kurir
                               </>
                             )}
                           </span>

@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { Product, CartItem, OrderType } from '@/types';
+import api from '@/services/api';
 
-const roundMoney = (amount: number) => Math.round((amount + Number.EPSILON) * 100) / 100;
+const roundMoney = (amount: number) => Math.round(amount);
 
 // Extended CartItem with flat fields for checkout compatibility
 export interface CartItemFlat extends CartItem {
@@ -28,6 +29,11 @@ interface CartStore {
   promoCode: string | null;
   discountPercent: number;
   promoDiscount: number; // alias for discountPercent
+
+  // Live store pricing settings (synced from backend store_settings)
+  deliveryFeeFlat: number;
+  taxPercentage: number;
+  loadStoreSettings: () => Promise<void>;
 
   // Actions
   setIsCartOpen: (open: boolean) => void;
@@ -74,6 +80,24 @@ export const useCartStore = create<CartStore>((set, get) => ({
   promoCode: null,
   discountPercent: 0,
   promoDiscount: 0,
+  deliveryFeeFlat: 15000,
+  taxPercentage: 10,
+
+  loadStoreSettings: async () => {
+    try {
+      const res = await api.get('/settings');
+      const data = res.data?.data;
+      if (!data) return;
+      const fee = Number(data.deliveryFeeFlat);
+      const tax = Number(data.taxPercentage);
+      set((state) => ({
+        deliveryFeeFlat: Number.isFinite(fee) && fee >= 100 ? fee : state.deliveryFeeFlat,
+        taxPercentage: Number.isFinite(tax) && tax >= 0 && tax <= 50 ? tax : state.taxPercentage,
+      }));
+    } catch {
+      // Keep default store settings when offline
+    }
+  },
 
   setIsCartOpen: (open) => set({ isCartOpen: open }),
 
@@ -180,11 +204,11 @@ export const useCartStore = create<CartStore>((set, get) => ({
     const clean = code.trim().toUpperCase();
     if (clean === 'COFFEELO10' || clean === 'SPECIALTY10') {
       set({ promoCode: clean, discountPercent: 10, promoDiscount: 10 });
-      return { success: true, message: 'Voucher applied! Diskon 10% diterapkan.' };
+      return { success: true, message: 'Voucher berhasil digunakan! Diskon 10% diterapkan.' };
     }
     if (clean === 'FIRSTBREW' || clean === 'WELCOME15') {
       set({ promoCode: clean, discountPercent: 15, promoDiscount: 15 });
-      return { success: true, message: 'Welcome voucher! Diskon 15% diterapkan.' };
+      return { success: true, message: 'Voucher selamat datang aktif! Diskon 15% diterapkan.' };
     }
     return { success: false, message: 'Kode promo tidak valid atau sudah kedaluwarsa.' };
   },
@@ -198,9 +222,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
   getTotalPrice: () => get().getSubtotal(),
 
   getDeliveryFee: () => {
-    const { fulfillmentType, getSubtotal } = get();
+    const { fulfillmentType, getSubtotal, deliveryFeeFlat } = get();
     if (fulfillmentType === 'PICKUP') return 0;
-    return getSubtotal() >= 25 ? 0 : 2.5;
+    return getSubtotal() >= 150000 ? 0 : roundMoney(deliveryFeeFlat);
   },
 
   getDiscountAmount: () => {
@@ -209,8 +233,8 @@ export const useCartStore = create<CartStore>((set, get) => ({
   },
 
   getTaxAmount: () => {
-    const { getSubtotal, getDiscountAmount } = get();
-    return roundMoney(Math.max(0, getSubtotal() - getDiscountAmount()) * 0.1);
+    const { getSubtotal, getDiscountAmount, taxPercentage } = get();
+    return roundMoney((Math.max(0, getSubtotal() - getDiscountAmount()) * taxPercentage) / 100);
   },
 
   getTax: () => get().getTaxAmount(),
